@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://reyu110.github.io/sitemap.xml
