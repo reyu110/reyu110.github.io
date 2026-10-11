@@ -1,0 +1,1377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Niche Communities Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout concept: a field report read in three tiers. The hero and the short version are raised and large, the sections sit on the
+   page ground, and the code reference is recessed. Ink-navy structure, one tinted hue per data source (YouTube, Bright Data, Groq).
+   Only the main figure in each section is boxed. Supporting text is flat and quieter. */
+:root {
+  --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --bg: #eef1f5; --surface: #ffffff; --surface-2: #f5f7fa; --recess: #e4e9f0;
+  --ink: #0e1a2b; --ink-2: #3d4b61; --ink-3: #5f6d82;
+  --line: #dce2ea; --line-strong: #b9c3d0;
+  --c-yt: #1baf7a; --c-bd: #2a78d6; --c-groq: #eb6834;
+  --yt-tint: #e3f5ed; --bd-tint: #e2edfb; --groq-tint: #fdebe3;
+  --good: #0ca30c; --warn: #fab219; --none: #7a879a;
+  --shadow: 0 1px 2px rgba(14,26,43,.06), 0 8px 24px rgba(14,26,43,.06);
+  --fs-sm: 14px;
+  --fs-h2: clamp(1.8rem, 1.15rem + 2.4vw, 2.75rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b111b; --surface: #121a27; --surface-2: #182233; --recess: #080d14;
+    --ink: #eaf0f8; --ink-2: #b7c3d4; --ink-3: #8d9bb0;
+    --line: #243044; --line-strong: #34445c;
+    --c-yt: #199e70; --c-bd: #3987e5; --c-groq: #d95926;
+    --yt-tint: #11302a; --bd-tint: #14263d; --groq-tint: #3a2218;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b111b; --surface: #121a27; --surface-2: #182233; --recess: #080d14;
+  --ink: #eaf0f8; --ink-2: #b7c3d4; --ink-3: #8d9bb0;
+  --line: #243044; --line-strong: #34445c;
+  --c-yt: #199e70; --c-bd: #3987e5; --c-groq: #d95926;
+  --yt-tint: #11302a; --bd-tint: #14263d; --groq-tint: #3a2218;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.55 var(--font-body); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 4px; }
+.wrap { max-width: 1120px; margin-inline: auto; padding-inline: clamp(16px, 4vw, 32px); }
+code, .mono { font-family: var(--font-mono); font-size: .92em; }
+code { background: var(--surface-2); border: 1px solid var(--line); padding: 1px 6px; border-radius: 5px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* nav */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+.nav .wrap { display: flex; align-items: center; gap: 14px; height: 52px; }
+.brand { font: 700 15px var(--font-display); letter-spacing: -.01em; white-space: nowrap; }
+.links { display: flex; gap: 2px; margin-left: auto; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+.links::-webkit-scrollbar { display: none; }
+.links a { padding: 6px 11px; border-radius: 999px; color: var(--ink-2); text-decoration: none; font-weight: 500; white-space: nowrap; }
+.links a:hover { background: var(--surface-2); color: var(--ink); }
+.links a[aria-current="true"] { background: var(--ink); color: var(--bg); }
+
+/* hero: level 1, the largest type on the page */
+.hero { padding-block: clamp(32px, 6vw, 76px) clamp(40px, 6vw, 72px); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr); gap: clamp(28px, 5vw, 60px); align-items: center; }
+.kicker { display: inline-flex; align-items: center; gap: 8px; font: 600 11.5px var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 18px; }
+.kicker i { width: 28px; height: 1px; background: var(--ink-3); display: block; }
+h1 { font: 700 clamp(2.4rem, 1.1rem + 4.8vw, 4.5rem)/.98 var(--font-display); letter-spacing: -.035em; text-wrap: balance; margin-bottom: 18px; }
+.hl { background: linear-gradient(transparent 64%, var(--bd-tint) 64%, var(--bd-tint) 92%, transparent 92%); }
+.lede { font-size: clamp(1.02rem, .95rem + .4vw, 1.2rem); color: var(--ink-2); max-width: 38ch; }
+.readpath { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: clamp(24px, 4vw, 40px); border-top: 1px solid var(--line-strong); }
+.readpath a { display: grid; gap: 4px; align-content: start; padding: 14px 14px 0 0; text-decoration: none; }
+.readpath a + a { padding-left: 14px; border-left: 1px solid var(--line); }
+.readpath b { font: 650 1.2rem/1.1 var(--font-display); letter-spacing: -.015em; }
+.readpath span { font-size: 13px; line-height: 1.35; color: var(--ink-3); }
+.readpath a:hover b { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+
+/* hero card: real output of the import */
+.device { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+.device-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 11px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.device-head b { font: 600 11.5px var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.tag { display: inline-flex; align-items: center; gap: 6px; font: 600 11.5px var(--font-body); padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.dot.yt { background: var(--c-yt); } .dot.bd { background: var(--c-bd); } .dot.gq { background: var(--c-groq); } .dot.in { background: var(--ink); }
+.device-body { padding: 16px; display: grid; gap: 14px; }
+.field label { display: block; font: 600 11px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px; }
+.input { border: 1px solid var(--line-strong); border-radius: 8px; padding: 9px 12px; background: var(--bg); font-size: 14px; overflow-wrap: anywhere; }
+.btn { display: inline-block; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--bg); font-weight: 600; font-size: 13.5px; }
+.flow-arrow { display: flex; align-items: center; gap: 10px; color: var(--ink-3); font-size: 12.5px; }
+.flow-arrow svg { flex: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; padding: 3px 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); font-size: 13px; }
+.chip.x { background: transparent; border-style: dashed; color: var(--ink-2); }
+
+/* sections: level 2 is the section heading and its one main figure, level 3 is flat supporting text */
+.sec { padding-block: clamp(40px, 6vw, 72px); border-top: 1px solid var(--line-strong); }
+.sec.raised { background: var(--surface); border-top-color: var(--line); border-bottom: 1px solid var(--line); padding-block: clamp(28px, 4vw, 44px); }
+.sec.recessed { background: var(--recess); }
+.sec-head { display: grid; gap: 12px; margin-bottom: clamp(24px, 3vw, 36px); max-width: 64ch; }
+.eyebrow { font: 600 11.5px var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+.recessed .eyebrow { color: var(--ink-2); }
+h2 { font: 650 var(--fs-h2)/1.06 var(--font-display); letter-spacing: -.03em; text-wrap: balance; }
+.recessed h2 { font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.1rem); }
+h3 { font: 650 1.05rem/1.25 var(--font-display); letter-spacing: -.01em; }
+.mini { font: 600 11.5px var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); margin: clamp(28px, 4vw, 40px) 0 12px; }
+.sub { color: var(--ink-2); font-size: 1.05rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.card.quiet { background: transparent; border-style: dashed; }
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: clamp(12px, 2vw, 20px); min-width: 0; }
+figcaption { margin-top: 12px; font-size: 13px; color: var(--ink-3); max-width: 80ch; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.scroll svg { display: block; width: 100%; height: auto; }
+.hint { display: none; font-size: 12px; color: var(--ink-3); margin-bottom: 8px; }
+.block + .block { margin-top: clamp(40px, 5vw, 60px); }
+.lane { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; font: 600 12px var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.lane::after { content: ""; flex: 1; height: 1px; background: var(--line-strong); }
+.lane svg { flex: none; width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* the short version: four answers, one band */
+.glance { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 18px; }
+.g-cell { display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; padding: 4px 24px 6px 0; text-decoration: none; }
+.g-cell + .g-cell { padding-left: 24px; border-left: 1px solid var(--line); }
+.g-q { font: 600 11.5px var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+.g-big { font: 650 clamp(1.45rem, 1.05rem + 1.3vw, 2rem)/1.08 var(--font-display); letter-spacing: -.025em; text-wrap: balance; }
+.g-cell p { font-size: var(--fs-sm); color: var(--ink-2); }
+.g-go { font-size: 13px; font-weight: 600; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; }
+.g-cell:hover .g-go { text-decoration-color: var(--ink); }
+
+/* svg diagram styling (classes live here, never inside the svg) */
+svg text { font-family: var(--font-body); }
+.band { fill: var(--surface-2); stroke: var(--line); }
+.nd { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.25; }
+.nd.yt { fill: var(--yt-tint); stroke: var(--c-yt); }
+.nd.bd { fill: var(--bd-tint); stroke: var(--c-bd); }
+.nd.gq { fill: var(--groq-tint); stroke: var(--c-groq); }
+.nd.ink { fill: var(--ink); stroke: var(--ink); }
+.nd.dash { fill: none; stroke-dasharray: 4 3; }
+.t1 { font-size: 13px; font-weight: 600; fill: var(--ink); }
+.t2 { font-size: 11px; fill: var(--ink-2); }
+.tm { font-family: var(--font-mono); font-size: 13px; font-weight: 600; fill: var(--ink); }
+.ink-t { fill: var(--bg); }
+.ph { font-size: 11px; font-weight: 600; letter-spacing: .09em; fill: var(--ink-2); }
+.lab { font-size: 10.5px; font-weight: 500; fill: var(--ink-3); }
+.ln { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
+.pl rect { fill: var(--surface); stroke-width: 1; }
+.pl.yt rect { stroke: var(--c-yt); } .pl.bd rect { stroke: var(--c-bd); }
+.pl text { font-size: 10.5px; font-weight: 600; fill: var(--ink); text-anchor: middle; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+
+/* pipeline: the numbered steps are the quick read, the diagram below them is the detail */
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; counter-reset: st; }
+.steps li { counter-increment: st; border-top: 2px solid var(--ink); padding-top: 10px; }
+.steps li::before { content: counter(st); display: block; margin-bottom: 4px; font: 700 1.3rem/1 var(--font-display); color: var(--ink-3); }
+.steps b { display: block; font: 650 1.02rem/1.25 var(--font-display); margin-bottom: 3px; }
+.steps p { font-size: var(--fs-sm); color: var(--ink-2); }
+
+/* output */
+.split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: clamp(16px, 3vw, 28px); align-items: start; }
+.bars { display: grid; gap: 10px; margin-top: 14px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) 36px; gap: 2px 10px; padding: 5px 6px; margin-inline: -6px; border-radius: 8px; }
+.row:hover, .row:focus-visible { background: var(--surface-2); }
+.row .nm { font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; grid-column: 1; }
+.row .val { grid-column: 2; grid-row: 1 / span 2; align-self: center; text-align: right; font-weight: 700; font-size: 15px; }
+.track { grid-column: 1; height: 12px; border-radius: 3px; background: var(--surface-2); border: 1px solid var(--line); position: relative; overflow: hidden; }
+.fill { position: absolute; inset: 0 auto 0 0; background: var(--c-yt); border-radius: 0 3px 3px 0; }
+.row .meta { grid-column: 1; font-size: 12px; color: var(--ink-3); }
+.axis { display: grid; grid-template-columns: minmax(0, 1fr) 36px; gap: 10px; margin-top: 4px; font-size: 11px; color: var(--ink-3); }
+.axis div { display: flex; justify-content: space-between; }
+.sticky { position: sticky; top: 76px; }
+.notes li { padding: 14px 0; border-top: 1px solid var(--line-strong); font-size: var(--fs-sm); color: var(--ink-2); }
+.notes li:first-child { border-top: 0; padding-top: 4px; }
+.notes b { display: block; margin-bottom: 3px; color: var(--ink); font: 650 1.02rem/1.25 var(--font-display); letter-spacing: -.01em; }
+.notes a { font-weight: 600; text-underline-offset: 3px; }
+
+/* costs: one focal paid card, the free items stay quiet */
+.pricing { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.paid { border-top: 3px solid var(--c-bd); padding: clamp(18px, 2.4vw, 26px); }
+.paid .who { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.paid .big { font: 700 clamp(2.6rem, 2rem + 2.2vw, 3.8rem)/1 var(--font-display); letter-spacing: -.03em; margin: 14px 0 8px; }
+.paid .per { font: 500 1rem var(--font-body); letter-spacing: 0; color: var(--ink-2); }
+.paid p { color: var(--ink-2); }
+.paid .run { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.free-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 28px; }
+.free-item { display: grid; gap: 6px; align-content: start; padding: 14px 0 6px; border-top: 1px solid var(--line-strong); }
+.free-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.free-item .who { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: var(--fs-sm); }
+.free-item .v { font: 700 1.25rem/1 var(--font-display); }
+.free-item p { font-size: 13px; color: var(--ink-2); }
+.free-item .gauge { height: 6px; margin-top: 4px; }
+.free-item .gauge-l { margin-top: 2px; }
+.gauge { height: 8px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--line); margin-top: 12px; overflow: hidden; }
+.gauge i { display: block; height: 100%; }
+.gauge-l { margin-top: 6px; font-size: 12px; color: var(--ink-3); }
+.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.ch-title { font: 650 1.02rem var(--font-display); }
+.ch-sub { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+.hbars { display: grid; gap: 14px; margin-top: 16px; }
+.hb { display: grid; gap: 5px; padding: 4px 6px; margin-inline: -6px; border-radius: 8px; }
+.hb:hover, .hb:focus-visible { background: var(--surface-2); }
+.hb-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; font-size: 13.5px; }
+.hb-top b { font-weight: 600; display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.hb-top .v { font-weight: 700; white-space: nowrap; }
+.hb-track { height: 14px; position: relative; border-bottom: 1px solid var(--line-strong); }
+.seg-bd { position: absolute; top: 0; bottom: 0; background: var(--c-bd); border-radius: 3px 3px 0 0; }
+.seg-free { position: absolute; top: 0; bottom: 0; border: 1px solid var(--c-bd); border-radius: 3px 3px 0 0;
+  background: repeating-linear-gradient(135deg, var(--c-bd) 0 1.5px, var(--bd-tint) 1.5px 6px); }
+.hb-note { font-size: 12px; color: var(--ink-3); }
+.key { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 14px; font-size: 12.5px; color: var(--ink-2); }
+.key i { display: inline-block; width: 22px; height: 11px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.k-free { border: 1px solid var(--c-bd); background: repeating-linear-gradient(135deg, var(--c-bd) 0 1.5px, var(--bd-tint) 1.5px 6px); }
+.k-bd { background: var(--c-bd); }
+.formula-line { margin-top: 12px; padding: 12px 14px; border: 1px dashed var(--line-strong); border-radius: 10px; font-size: 13.5px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+details.tv { margin-top: 14px; font-size: 13px; }
+details.tv summary { cursor: pointer; color: var(--ink-2); font-weight: 600; width: fit-content; }
+details.tv .scroll { margin-top: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--ink-3); font-weight: 600; }
+td.r, th.r { text-align: right; }
+.fine { font-size: 12.5px; color: var(--ink-3); margin-top: 14px; max-width: 90ch; }
+.fine a { text-underline-offset: 2px; }
+details.how { margin-top: 14px; }
+details.how .formula-line:first-of-type { margin-top: 10px; }
+
+/* reference: formulas and design decisions */
+.explain { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.seg { display: flex; height: 44px; border-radius: 8px; overflow: hidden; gap: 2px; margin-top: 14px; }
+.seg > div { display: flex; align-items: center; justify-content: center; color: var(--bg); font-weight: 700; font-size: 14px; min-width: 0; }
+.seg .k1 { width: 40%; } .seg .k2 { width: 40%; } .seg .k3 { width: 20%; }
+.k1 { background: var(--ink); } .k2 { background: var(--ink-2); } .k3 { background: var(--ink-3); }
+.parts { margin-top: 12px; }
+.parts > div { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); font-size: var(--fs-sm); color: var(--ink-2); }
+.parts i { width: 12px; height: 12px; border-radius: 3px; margin-top: 4px; }
+.parts b { color: var(--ink); font-weight: 600; }
+.defs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 32px; }
+.defs > div { padding: 16px 0 20px; border-top: 1px solid var(--line-strong); }
+.defs dt { font: 650 1rem/1.25 var(--font-display); letter-spacing: -.01em; }
+.defs dd { margin-top: 6px; font-size: var(--fs-sm); color: var(--ink-2); }
+
+/* benefits */
+.compare { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.cmp-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1.15fr); align-items: start; gap: 14px; padding: 11px 16px; border-top: 1px solid var(--line); }
+.cmp-row:first-child { border-top: 0; }
+.cmp-head { background: var(--surface-2); font: 600 11px var(--font-body); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); }
+.cmp-group { padding: 9px 16px; background: var(--surface-2); border-top: 1px solid var(--line); font: 600 11.5px var(--font-body); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); }
+.cmp-row .what { font-weight: 600; }
+.cmp-row .before { color: var(--ink-3); }
+.cmp-row .after { color: var(--ink); font-weight: 500; display: flex; gap: 9px; }
+.cmp-row .after svg { flex: none; width: 18px; height: 18px; margin-top: 2px; stroke: var(--good); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.who-for { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0 28px; }
+.who-for > div { padding-top: 14px; border-top: 1px solid var(--line-strong); }
+.who-for h4 { font: 650 1.02rem/1.25 var(--font-display); letter-spacing: -.01em; }
+.who-for p { margin-top: 4px; font-size: var(--fs-sm); color: var(--ink-2); }
+
+/* status: the next steps come first and are the only inverted block */
+.next { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; counter-reset: s; }
+.next li { counter-increment: s; background: var(--ink); color: var(--bg); border-radius: 12px; padding: 18px 18px 20px; font-size: 15px; }
+.next li::before { content: counter(s); display: block; font: 700 1.6rem/1 var(--font-display); margin-bottom: 8px; opacity: .6; }
+.next code { background: transparent; border-color: currentColor; opacity: .9; }
+.status { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.pill { display: inline-flex; align-items: center; gap: 7px; font: 600 12.5px var(--font-body); padding: 4px 11px 4px 8px; border-radius: 999px; border: 1px solid var(--line-strong); margin-bottom: 12px; }
+.pill svg { width: 16px; height: 16px; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.pill.good svg { stroke: var(--good); } .pill.warn svg { stroke: var(--warn); } .pill.none svg { stroke: var(--none); }
+.status li { position: relative; padding-left: 14px; font-size: var(--fs-sm); color: var(--ink-2); }
+.status li + li { margin-top: 7px; }
+.status li::before { content: ""; position: absolute; left: 0; top: .6em; width: 5px; height: 5px; border-radius: 50%; background: var(--line-strong); }
+.quiet li { color: var(--ink-3); }
+footer { border-top: 1px solid var(--line-strong); padding-block: 22px 40px; font-size: 12.5px; color: var(--ink-3); }
+
+/* seo additions */
+.pl.n rect { stroke: var(--line-strong); }
+.alert-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; min-width: 0; }
+.alert-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; padding: 14px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.alert-head b { font-weight: 600; }
+.sev { font: 700 11px var(--font-body); letter-spacing: .08em; color: #fff; background: #d03b3b; border-radius: 4px; padding: 2px 7px; }
+.sim-tag { display: inline-flex; font: 600 11px var(--font-body); letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; border: 1px dashed var(--line-strong); color: var(--ink-2); }
+.alert-body { padding: 14px 16px; display: grid; gap: 16px; }
+.alert-body h4 { margin: 0 0 6px; font: 600 11.5px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.alert-body ul { padding-left: 18px; list-style: disc; display: grid; gap: 6px; font-size: 13.5px; color: var(--ink-2); }
+.alert-body li .dot { margin-right: 6px; }
+.srcs { display: flex; flex-wrap: wrap; gap: 6px; }
+.src { font-size: 12px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--ink-2); }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; margin-top: 14px; }
+.tile { padding: 10px 0; border-top: 1px solid var(--line); min-width: 0; }
+.tile span { display: block; font-size: 12px; color: var(--ink-3); }
+.tile b { font: 650 1.35rem/1.15 var(--font-display); letter-spacing: -.02em; }
+.cols { display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-top: 4px; border-bottom: 1px solid var(--line-strong); margin-top: 14px; }
+.cols > div { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; border-radius: 6px; }
+.cols > div:hover, .cols > div:focus-visible { background: var(--surface-2); }
+.cols i { display: block; width: 100%; min-height: 3px; background: var(--c-bd); border-radius: 3px 3px 0 0; }
+.cols.ctr i { background: var(--ink-2); }
+.cols em { font-style: normal; font-size: 11.5px; font-weight: 600; }
+.col-labels { display: flex; gap: 8px; margin-top: 6px; font-size: 11px; color: var(--ink-3); }
+.col-labels span { flex: 1; min-width: 0; text-align: center; }
+.judge { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; margin-top: 14px; font-size: 13px; color: var(--ink-2); }
+.judge b { color: var(--ink); }
+
+/* added 8 Oct 2026: creators results, the deliverables list and the plans */
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.trio h3 { margin-bottom: 2px; }
+.draft { display: grid; gap: 12px; margin-top: 14px; }
+.input.msg { white-space: pre-line; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+.gap-mark { background: var(--groq-tint); border-bottom: 1.5px dashed var(--c-groq); color: var(--ink); border-radius: 3px; padding: 0 2px; }
+.pairs { display: grid; gap: 16px; margin-top: 16px; }
+.pr { display: grid; gap: 5px; padding: 4px 6px; margin-inline: -6px; border-radius: 8px; }
+.pr:hover, .pr:focus-visible { background: var(--surface-2); }
+.pr-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; font-size: 13.5px; }
+.pr-top b { font-weight: 600; min-width: 0; }
+.pr-top .v { font-weight: 700; white-space: nowrap; }
+.pair-track { display: grid; gap: 3px; border-bottom: 1px solid var(--line-strong); padding-bottom: 3px; }
+.pair-track i { display: block; min-width: 3px; border-radius: 0 3px 3px 0; }
+.pair-track .you { height: 12px; background: var(--c-bd); }
+.pair-track .peer { height: 7px; background: var(--ink-3); }
+.k-peer { background: var(--ink-3); }
+.cols.short { height: 110px; }
+.deliv .cmp-row { grid-template-columns: 230px minmax(0, 1fr) minmax(0, 1.1fr); }
+.deliv .cmp-row .before { color: var(--ink-2); }
+.deliv .cmp-row .after { display: block; font-weight: 400; color: var(--ink-2); }
+.deliv .what small { display: block; margin-top: 2px; font: 500 12.5px var(--font-body); color: var(--ink-3); }
+.st { display: inline-flex; gap: 8px; align-items: baseline; }
+.st i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--good); transform: translateY(-1px); }
+.st.rec i { background: var(--warn); }
+.phase { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 10px clamp(20px, 4vw, 44px); padding-block: 24px; border-top: 1px solid var(--line-strong); }
+.ph-n { font: 600 11.5px var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
+.phase-head p { margin-top: 6px; font-size: var(--fs-sm); color: var(--ink-2); }
+.road > li { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.5fr) minmax(0, 1fr); gap: 4px 24px; padding-block: 14px; border-top: 1px solid var(--line); }
+.road > li:first-child { border-top: 0; padding-top: 0; }
+.road .r-t b { font: 650 1.02rem/1.25 var(--font-display); letter-spacing: -.01em; }
+.road p { font-size: var(--fs-sm); color: var(--ink-2); }
+.road .r-n { font-size: 13px; color: var(--ink-2); }
+.road .r-n span { display: block; margin-top: 6px; font: 600 11px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.road .r-n span:first-child { margin-top: 0; }
+.size { display: inline-flex; gap: 2px; margin-left: 8px; vertical-align: -1px; }
+.size i { width: 6px; height: 12px; border-radius: 1.5px; background: var(--line-strong); }
+.size i.on { background: var(--ink); }
+.fy { fill: var(--c-yt); } .fb { fill: var(--c-bd); } .fg { fill: var(--c-groq); }
+@media (max-width: 900px) {
+  .trio, .deliv .cmp-row, .phase, .road > li { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* tooltip */
+#tip { position: fixed; left: 0; top: 0; z-index: 50; max-width: 280px; padding: 8px 11px; border-radius: 8px; background: var(--ink); color: var(--bg); font-size: 12.5px; line-height: 1.4; pointer-events: none; box-shadow: var(--shadow); }
+
+@media (max-width: 900px) {
+  .hero-grid, .split, .pricing, .explain, .charts, .free-strip { grid-template-columns: minmax(0, 1fr); }
+  .steps, .defs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .status, .next { grid-template-columns: minmax(0, 1fr); }
+  .glance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g-cell, .g-cell + .g-cell { padding: 18px 16px 18px 0; border-left: 0; }
+  .g-cell:nth-child(even) { padding-left: 16px; border-left: 1px solid var(--line); }
+  .g-cell:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .hint { display: block; }
+  .sticky { position: static; }
+  .cmp-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .cmp-head { display: none; }
+}
+@media (max-width: 560px) {
+  .brand span { display: none; }
+  .steps, .defs, .glance, .tiles, .judge { grid-template-columns: minmax(0, 1fr); }
+  .g-cell, .g-cell + .g-cell, .g-cell:nth-child(even) { padding: 16px 0; border-left: 0; }
+  .g-cell + .g-cell { border-top: 1px solid var(--line); }
+  .readpath { grid-template-columns: minmax(0, 1fr); }
+  .readpath a, .readpath a + a { grid-template-columns: 104px minmax(0, 1fr); align-items: baseline; gap: 10px; padding: 10px 0; border-left: 0; }
+  .readpath a + a { border-top: 1px solid var(--line); }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<nav class="nav" aria-label="Sections">
+  <div class="wrap">
+    <div class="brand">Niche Communities<span class="mono" style="font-weight:500;color:var(--ink-3)"> · report</span></div>
+    <div class="links" id="links">
+      <a href="#summary">Summary</a><a href="#output">What you get</a><a href="#benefits">Why use it</a><a href="#pipeline">How it works</a><a href="#costs">Costs</a><a href="#status">Status</a><a href="#plans">Plans</a><a href="#code">How it’s built</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="kicker"><i></i>Project report · updated 8 Oct 2026</div>
+        <h1>Paste a website. See where its <span class="hl">audience lives.</span></h1>
+        <p class="lede">A dashboard that finds the communities and creators around any niche, ranks who matters on each platform, and tracks them over time. It also helps you work with those creators, and it watches the site on Google and says what to fix when rankings slip.</p>
+        <nav class="readpath" aria-label="Choose how deep to read">
+          <a href="#summary"><b>1 minute</b><span>The short version</span></a>
+          <a href="#output"><b>14 minutes</b><span>Plus results, benefits, how it works, costs and status</span></a>
+          <a href="#code"><b>21 minutes</b><span>Everything, including the plans and how it’s built</span></a>
+        </nav>
+      </div>
+      <figure>
+        <div class="device" role="group" aria-label="The website import, filled in for allbirds.com">
+          <div class="device-head"><b>New niche</b><span class="tag"><span class="dot gq"></span>Groq · real output</span></div>
+          <div class="device-body">
+            <div class="field"><label>Website URL</label><div class="input mono">https://www.allbirds.com</div></div>
+            <div><span class="btn">Fill from website</span></div>
+            <div class="flow-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v15M6 13l6 6 6-6"/></svg>about 1.5 seconds, then you review and save</div>
+            <div class="field"><label>Name</label><div class="input">Sustainable Comfortable Footwear</div></div>
+            <div class="field"><label>Keywords</label>
+              <div class="chips"><span class="chip">sustainable shoes</span><span class="chip">eco friendly footwear</span><span class="chip">merino wool shoes</span><span class="chip">vegan shoes</span><span class="chip">comfortable sneakers</span><span class="chip x">+ more</span></div></div>
+            <div class="field"><label>Exclude</label>
+              <div class="chips"><span class="chip">jobs</span><span class="chip">careers</span><span class="chip">wholesale</span></div></div>
+            <div class="field"><label>Website (for SEO tracking)</label><div class="input mono">https://www.allbirds.com</div></div>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="sec raised" id="summary" aria-labelledby="h-summary">
+  <div class="wrap">
+    <h2 class="eyebrow" id="h-summary">The short version</h2>
+    <div class="glance">
+      <a class="g-cell" href="#output"><span class="g-q">What it does</span><b class="g-big">4 platforms, plus Google</b>
+        <p>Finds and ranks communities and creators on YouTube, TikTok, Instagram and X, and helps you message, take applications from and fund them. Also checks your Google rankings on a schedule and explains any drop.</p><span class="g-go">See what you get ↓</span></a>
+      <a class="g-cell" href="#costs"><span class="g-q">What it costs</span><b class="g-big">≈ $0.12 a run</b>
+        <p>The worst case for a full community run. An SEO check is about 2 cents. Free allowances can cover both, and only Bright Data charges per use.</p><span class="g-go">See the costs ↓</span></a>
+      <a class="g-cell" href="#status"><span class="g-q">What works today</span><b class="g-big">12 of 12 built</b>
+        <p>Every deliverable exists and 107 of 107 automated checks pass. YouTube, the Groq features and the dashboard are verified on live services. TikTok, Instagram, X and Google rank checks wait for a Bright Data key.</p><span class="g-go">See the status ↓</span></a>
+      <a class="g-cell" href="#next"><span class="g-q">What to do next</span><b class="g-big">3 steps to go live</b>
+        <p>Add the Bright Data key, run the first live check, then schedule the daily runs.</p><span class="g-go">See the steps ↓</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="output">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">What do you get?</div>
+      <h2>Ranked lists, ranking alerts, and a pipeline for the creators you pick</h2>
+      <p class="sub">Three results to look at. The first is a real YouTube run. In the second, the Google positions are simulated, while the page audit, Google’s update feed and Groq’s advice were real. In the third, the message is real Groq output and the numbers are example data.</p>
+    </div>
+
+    <div class="block">
+      <div class="lane"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg>Communities and creators</div>
+      <div class="split">
+        <figure class="fig">
+        <h3>The largest channel is not the top-ranked one</h3>
+        <p class="ch-sub">Real run · niche “espresso, home barista” · 14 YouTube channels found · score out of 100</p>
+        <ul class="bars" id="rank-bars">
+          <li class="row" tabindex="0" data-tip="TMB – The Majestic Bean Channel / Home Barista: score 67.1. 10,100 subscribers. A typical video gets 77% of that in views. 0 uploads in 30 days.">
+            <div class="nm">TMB – The Majestic Bean / Home Barista</div><div class="val num">67</div>
+            <div class="track"><div class="fill" style="width:67.1%"></div></div>
+            <div class="meta num">10.1K subs · typical video reaches 77% of subs</div></li>
+          <li class="row" tabindex="0" data-tip="Espresso: score 65.7. 644,000 subscribers, the largest channel found. A typical video gets 7% of that in views. 29 uploads in 30 days.">
+            <div class="nm">Espresso</div><div class="val num">66</div>
+            <div class="track"><div class="fill" style="width:65.7%"></div></div>
+            <div class="meta num">644K subs · typical video reaches 7% · 29 uploads / 30 d</div></li>
+          <li class="row" tabindex="0" data-tip="Just Espresso: score 64.3. 41,000 subscribers. A typical video gets 9% of that in views. 15 uploads in 30 days.">
+            <div class="nm">Just Espresso</div><div class="val num">64</div>
+            <div class="track"><div class="fill" style="width:64.3%"></div></div>
+            <div class="meta num">41K subs · typical video reaches 9% · 15 uploads / 30 d</div></li>
+          <li class="row" tabindex="0" data-tip="ECS COFFEE Espresso &amp; Coffee Gear: score 62.1. 32,400 subscribers. A typical video gets 11% of that in views. 2 uploads in 30 days.">
+            <div class="nm">ECS COFFEE Espresso &amp; Coffee Gear</div><div class="val num">62</div>
+            <div class="track"><div class="fill" style="width:62.1%"></div></div>
+            <div class="meta num">32.4K subs · typical video reaches 11% · 2 uploads / 30 d</div></li>
+          <li class="row" tabindex="0" data-tip="Espresso Canada: score 61.4. 1,240 subscribers. A typical video gets 148% of that in views, so videos outgrow the subscriber base. 0 uploads in 30 days.">
+            <div class="nm">Espresso Canada</div><div class="val num">61</div>
+            <div class="track"><div class="fill" style="width:61.4%"></div></div>
+            <div class="meta num">1.2K subs · typical video reaches 148% of subs</div></li>
+          <li class="row" tabindex="0" data-tip="JoJo's Espresso: score 61.4. 1,060 subscribers. A typical video gets 602% of that in views. 0 uploads in 30 days.">
+            <div class="nm">JoJo's Espresso</div><div class="val num">61</div>
+            <div class="track"><div class="fill" style="width:61.4%"></div></div>
+            <div class="meta num">1.1K subs · typical video reaches 602% of subs</div></li>
+          <li class="row" tabindex="0" data-tip="Home Barista Corner: score 55.7. 7,130 subscribers. A typical video gets 27% of that in views. 0 uploads in 30 days.">
+            <div class="nm">Home Barista Corner</div><div class="val num">56</div>
+            <div class="track"><div class="fill" style="width:55.7%"></div></div>
+            <div class="meta num">7.1K subs · typical video reaches 27% of subs</div></li>
+          <li class="row" tabindex="0" data-tip="Brew Espresso Coffee: score 52.9. 809 subscribers. A typical video gets 91% of that in views. 0 uploads in 30 days.">
+            <div class="nm">Brew Espresso Coffee</div><div class="val num">53</div>
+            <div class="track"><div class="fill" style="width:52.9%"></div></div>
+            <div class="meta num">0.8K subs · typical video reaches 91% of subs</div></li>
+        </ul>
+        <div class="axis" aria-hidden="true"><div><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div><span></span></div>
+        <details class="tv"><summary>Table view</summary><div class="scroll"><table>
+          <tr><th>Channel</th><th class="r">Score</th><th class="r">Subscribers</th><th class="r">Views÷subs (median)</th><th class="r">Uploads / 30 d</th></tr>
+          <tr><td>TMB – The Majestic Bean / Home Barista</td><td class="r">67.1</td><td class="r">10,100</td><td class="r">0.77</td><td class="r">0</td></tr>
+          <tr><td>Espresso</td><td class="r">65.7</td><td class="r">644,000</td><td class="r">0.07</td><td class="r">29</td></tr>
+          <tr><td>Just Espresso</td><td class="r">64.3</td><td class="r">41,000</td><td class="r">0.09</td><td class="r">15</td></tr>
+          <tr><td>ECS COFFEE Espresso &amp; Coffee Gear</td><td class="r">62.1</td><td class="r">32,400</td><td class="r">0.11</td><td class="r">2</td></tr>
+          <tr><td>Espresso Canada</td><td class="r">61.4</td><td class="r">1,240</td><td class="r">1.48</td><td class="r">0</td></tr>
+          <tr><td>JoJo's Espresso</td><td class="r">61.4</td><td class="r">1,060</td><td class="r">6.02</td><td class="r">0</td></tr>
+          <tr><td>Home Barista Corner</td><td class="r">55.7</td><td class="r">7,130</td><td class="r">0.27</td><td class="r">0</td></tr>
+          <tr><td>Brew Espresso Coffee</td><td class="r">52.9</td><td class="r">809</td><td class="r">0.91</td><td class="r">0</td></tr>
+        </table></div></details>
+          <figcaption>Colour: YouTube. Top 8 of 14 channels; the other six scored lower. Totals for the run: 769,551 subscribers and 49 uploads in the last 30 days. Hover or focus a row for the detail.</figcaption>
+        </figure>
+        <div class="sticky">
+          <h3 class="mini" style="margin-top:0">Reading the chart</h3>
+          <ol class="notes">
+            <li><b>Size is not rank.</b>Espresso is the largest channel, with 644K subscribers, and ranks #2. A typical video reaches 7% of its subscribers.</li>
+            <li><b>Engagement counts.</b>The #1 channel has 10.1K subscribers. A typical video reaches 77% of them.</li>
+            <li><b>One blend, per platform.</b>Reach 40%, engagement 40% and activity 20%, ranked only against other YouTube channels. <a href="#code">How a score is made</a></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="lane"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18l5-5 4 3 7-9M15 7h5v5"/><path d="M4 21h16"/></svg>Google rankings</div>
+      <div class="split">
+      <div class="alert-card" role="group" aria-label="Example alert from the SEO tab">
+        <div class="alert-head"><span class="sev">CRITICAL</span><b>“marathon training plan” left page one: #3 → #12</b><span class="sim-tag">simulated ranks</span></div>
+        <div class="alert-body">
+          <div><h4>Likely causes</h4><ul>
+            <li>Rivals now rank above you, for example a 16-week printable plan at #3.</li>
+            <li>Google's September 2026 spam update is still rolling out, so shifts are expected.</li>
+            <li><span class="dot gq"></span>Groq also noticed the page title is just “Runner's World” and never names the topic.</li>
+          </ul></div>
+          <div><h4>What to do</h4><ul>
+            <li>Google advises waiting a full week after an update finishes, and avoiding quick fixes.</li>
+            <li>Compare the top 3 pages with yours for intent, depth and freshness.</li>
+            <li>Rewrite the title and meta description to match the query, then re-check in 7–14 days.</li>
+          </ul></div>
+          <div class="srcs"><span class="src">Google: core updates</span><span class="src">Google: title links</span><span class="src">Google: people-first content</span></div>
+        </div>
+      </div>
+      <figure class="fig">
+        <h3>Visibility over time</h3>
+        <p class="ch-sub">Click-weighted score, 0–100 · simulated ranks</p>
+        <div class="cols" role="img" aria-label="Visibility was 36.1 from 1 to 4 October, then fell to 2.9 on 5 and 6 October">
+          <div tabindex="0" data-tip="1 Oct: visibility 36.1 (ranked #3)"><em class="num">36</em><i style="height:70%"></i></div>
+          <div tabindex="0" data-tip="2 Oct: visibility 36.1 (ranked #3)"><em class="num">36</em><i style="height:70%"></i></div>
+          <div tabindex="0" data-tip="3 Oct: visibility 36.1 (ranked #3)"><em class="num">36</em><i style="height:70%"></i></div>
+          <div tabindex="0" data-tip="4 Oct: visibility 36.1 (ranked #3)"><em class="num">36</em><i style="height:70%"></i></div>
+          <div tabindex="0" data-tip="5 Oct: visibility 2.9 (ranked #12). First check below baseline, shown as watch."><em class="num">2.9</em><i style="height:5.7%"></i></div>
+          <div tabindex="0" data-tip="6 Oct: visibility 2.9 (ranked #12). Second check below baseline, so the alert is confirmed."><em class="num">2.9</em><i style="height:5.7%"></i></div>
+        </div>
+        <div class="col-labels"><span>1 Oct</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+        <div class="tiles">
+          <div class="tile"><span>Visibility</span><b class="num">36 → 2.9</b></div>
+          <div class="tile"><span>Terms on page one</span><b class="num">1 → 0</b></div>
+          <div class="tile"><span>Google update</span><b>rolling out</b></div>
+          <div class="tile"><span>Open alerts</span><b>1 critical</b></div>
+        </div>
+        <details class="tv"><summary>Table view</summary><div class="scroll"><table>
+          <tr><th>Day</th><th class="r">Position</th><th class="r">Visibility</th><th>Status</th></tr>
+          <tr><td>1–4 Oct</td><td class="r">3</td><td class="r">36.1</td><td>steady</td></tr>
+          <tr><td>5 Oct</td><td class="r">12</td><td class="r">2.9</td><td>watch (first sighting)</td></tr>
+          <tr><td>6 Oct</td><td class="r">12</td><td class="r">2.9</td><td>critical, confirmed</td></tr>
+        </table></div></details>
+        <figcaption>The first bad check shows as “watch”. The second confirms it, which keeps normal day-to-day movement from raising alarms.</figcaption>
+      </figure>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="lane"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.8.3 4.5 2.5 4.5 5.8"/></svg>Working with creators</div>
+      <div class="trio">
+        <figure class="fig">
+          <h3>A message to edit and send</h3>
+          <p class="ch-sub">Real Groq output · fictional sender and creator</p>
+          <div class="draft">
+            <div class="field"><label>Subject</label><div class="input">Collaboration opportunity with Grindwell Coffee Gear</div></div>
+            <div class="field"><label>Message</label><div class="input msg">Hi Example Creator,
+
+I’m Alex Morgan from Grindwell Coffee Gear. I’m reaching out because your YouTube channel focuses on home espresso, and your audience of 24,000 home baristas aligns well with a new product we’re launching. We’d like to send you our new hand grinder, pay $300 for an honest video review, and let you keep full editorial control.
+
+I especially liked <mark class="gap-mark">[one specific thing from your recent work]</mark>. If you’re open to a short chat about how this could work for both of us, just let me know.
+
+Best,
+Alex Morgan</div></div>
+          </div>
+          <figcaption>The highlighted gap is left for you to fill with something true. Nothing is sent from the tool, and a creator who has not replied after 7 days is flagged for a follow-up.</figcaption>
+        </figure>
+
+        <figure class="fig">
+          <h3>Applications at a glance</h3>
+          <p class="ch-sub">Example data · 11 applications over 5 weeks</p>
+          <div class="tiles">
+            <div class="tile"><span>Applicants</span><b class="num">11</b></div>
+            <div class="tile"><span>Waiting for a decision</span><b class="num">3</b></div>
+            <div class="tile"><span>Acceptance rate</span><b class="num">57%</b></div>
+            <div class="tile"><span>Time to decide (median)</span><b class="num">3 days</b></div>
+          </div>
+          <div class="cols short" role="img" aria-label="Applications per week: 2, 3, 2, 3 and 1">
+            <div tabindex="0" data-tip="Week 1: 2 applications"><em class="num">2</em><i style="height:50%"></i></div>
+            <div tabindex="0" data-tip="Week 2: 3 applications"><em class="num">3</em><i style="height:75%"></i></div>
+            <div tabindex="0" data-tip="Week 3: 2 applications"><em class="num">2</em><i style="height:50%"></i></div>
+            <div tabindex="0" data-tip="Week 4: 3 applications"><em class="num">3</em><i style="height:75%"></i></div>
+            <div tabindex="0" data-tip="Week 5: 1 application"><em class="num">1</em><i style="height:25%"></i></div>
+          </div>
+          <div class="col-labels"><span>Wk 1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+          <details class="tv"><summary>Table view</summary><div class="scroll"><table>
+            <tr><th>Week</th><th class="r">Applications</th></tr>
+            <tr><td>1</td><td class="r">2</td></tr><tr><td>2</td><td class="r">3</td></tr><tr><td>3</td><td class="r">2</td></tr>
+            <tr><td>4</td><td class="r">3</td></tr><tr><td>5</td><td class="r">1</td></tr>
+            <tr><th>Outcome</th><th class="r">Applicants</th></tr>
+            <tr><td>Accepted</td><td class="r">4</td></tr><tr><td>Rejected</td><td class="r">3</td></tr>
+            <tr><td>Withdrew</td><td class="r">1</td></tr><tr><td>Waiting</td><td class="r">3</td></tr>
+          </table></div></details>
+          <figcaption>Imported from a CSV or pasted from a spreadsheet. The rate is accepted out of those decided, 4 of 7. An audience number is marked self-reported unless the daily runs track that creator.</figcaption>
+        </figure>
+
+        <figure class="fig">
+          <h3>Funded creators beside the niche</h3>
+          <p class="ch-sub">Example data · audience growth since the first grant</p>
+          <div class="pairs">
+            <div class="pr" tabindex="0" data-tip="Creator A on TikTok: $500 given. Audience 120,000 to 134,400, up 12.0%. The niche’s other tracked creators grew 2.0% over the same dates. $0.03 per new follower.">
+              <div class="pr-top"><b>Creator A · TikTok</b><span class="v num">+12.0%</span></div>
+              <div class="pair-track"><i class="you" style="width:80%"></i><i class="peer" style="width:13.3%"></i></div>
+              <div class="hb-note">others +2.0% · $0.03 per new follower</div></div>
+            <div class="pr" tabindex="0" data-tip="Creator B on YouTube: $300 given. Audience 7,130 to 7,771, up 9.0%. The niche’s other tracked creators grew 1.5% over the same dates. $0.47 per new follower.">
+              <div class="pr-top"><b>Creator B · YouTube</b><span class="v num">+9.0%</span></div>
+              <div class="pair-track"><i class="you" style="width:60%"></i><i class="peer" style="width:10%"></i></div>
+              <div class="hb-note">others +1.5% · $0.47 per new follower</div></div>
+            <div class="pr" tabindex="0" data-tip="Creator C on Instagram: $150 given. Audience 8,000 to 8,650, up 8.1%. Fewer than 3 other tracked creators, so no comparison. $0.23 per new follower.">
+              <div class="pr-top"><b>Creator C · Instagram</b><span class="v num">+8.1%</span></div>
+              <div class="pair-track"><i class="you" style="width:54%"></i></div>
+              <div class="hb-note">no comparison yet · $0.23 per new follower</div></div>
+          </div>
+          <div class="axis" style="grid-template-columns:minmax(0,1fr);margin-top:6px" aria-hidden="true"><div><span>0%</span><span>5%</span><span>10%</span><span>15%</span></div></div>
+          <div class="key"><span><i class="k-bd"></i>funded creator</span><span><i class="k-peer"></i>the niche’s other creators (median)</span></div>
+          <details class="tv"><summary>Table view</summary><div class="scroll"><table>
+            <tr><th>Creator</th><th class="r">Given</th><th class="r">Audience then → now</th><th class="r">Growth</th><th class="r">Others</th><th class="r">Per new follower</th></tr>
+            <tr><td>A · TikTok</td><td class="r">$500</td><td class="r">120,000 → 134,400</td><td class="r">+12.0%</td><td class="r">+2.0%</td><td class="r">$0.03</td></tr>
+            <tr><td>B · YouTube</td><td class="r">$300</td><td class="r">7,130 → 7,771</td><td class="r">+9.0%</td><td class="r">+1.5%</td><td class="r">$0.47</td></tr>
+            <tr><td>C · Instagram</td><td class="r">$150</td><td class="r">8,000 → 8,650</td><td class="r">+8.1%</td><td class="r">none yet</td><td class="r">$0.23</td></tr>
+          </table></div></details>
+          <figcaption>The comparison needs at least 3 other tracked creators. A longer bar next to a shorter one is context, not proof that the grant caused it.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="benefits">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Why use it?</div>
+      <h2>What changes compared with doing it by hand</h2>
+      <p class="sub">Less manual research, an earlier warning when a ranking slips, and one place to keep track of creators.</p>
+    </div>
+    <div class="compare" role="table" aria-label="By hand compared with the tool">
+      <div class="cmp-row cmp-head" role="row"><span role="columnheader">Task</span><span role="columnheader">By hand</span><span role="columnheader">With this tool</span></div>
+      <div role="rowgroup" aria-label="Communities and creators">
+        <div class="cmp-group" aria-hidden="true">Communities and creators</div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Start a new niche</span><span class="before" role="cell">Brainstorm keywords from scratch</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Paste a link, review the suggestion, save</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Find communities</span><span class="before" role="cell">Search each platform separately, tab by tab</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>One run across every connected source</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Compare platforms</span><span class="before" role="cell">Raw follower numbers side by side</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Each platform in its own unit, with gaps listed</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Choose creators</span><span class="before" role="cell">Sort by follower count</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Reach, engagement and activity blended, ranked per platform</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Stay current</span><span class="before" role="cell">Redo the research next quarter</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Scheduled snapshots build trend lines</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Hand it off</span><span class="before" role="cell">Screenshots and a spreadsheet</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>One CSV with profile links</span></div>
+      </div>
+      <div role="rowgroup" aria-label="Google rankings">
+        <div class="cmp-group" aria-hidden="true">Google rankings</div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Know when rankings slip</span><span class="before" role="cell">Notice a traffic dip weeks later</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Daily Google checks flag drops that persist and ignore 1–2 place wobble</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Find the cause</span><span class="before" role="cell">Guess, or read a dozen SEO blogs</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Likely causes and fixes from Google's own guidance, with its update feed checked</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Keep track of fixes</span><span class="before" role="cell">A to-do list nobody checks</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Each alert becomes a fix you mark done, and it resolves when the alert stops firing</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Find new keywords</span><span class="before" role="cell">Guess what people search for</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Google’s related searches and AI ideas, ready to add to tracking</span></div>
+      </div>
+      <div role="rowgroup" aria-label="Working with creators">
+        <div class="cmp-group" aria-hidden="true">Working with creators</div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Shortlist</span><span class="before" role="cell">Copy names into a spreadsheet</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>One click from the ranked list, with the date of every step kept</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Write to them</span><span class="before" role="cell">Draft each message from scratch</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>A draft from your offer, your site and what is known about them, with gaps left for the personal touch</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Follow up</span><span class="before" role="cell">Try to remember who has not replied</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Anyone silent for 7 days is flagged</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Take applications</span><span class="before" role="cell">Read a form export row by row</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Import the CSV, then see volume, acceptance rate, time to decide and how each applicant compares</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Run a fund</span><span class="before" role="cell">A budget spreadsheet</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Grants, deliverables and each creator’s growth beside the niche’s, in one place, read from the platforms each day</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">See what needs you</span><span class="before" role="cell">Check four places each morning</span><span class="after" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>A daily digest: follow-ups due, applicants waiting, late deliverables and SEO fixes, with a notification</span></div>
+      </div>
+    </div>
+    <h3 class="mini">Who it’s for</h3>
+    <div class="who-for">
+      <div><h4>Outreach</h4><p>Shortlist creators worth contacting, write to them, take applications and track a fund.</p></div>
+      <div><h4>Strategy</h4><p>See which platforms matter for a niche and how they shift.</p></div>
+      <div><h4>Founders</h4><p>Find where your audience already gathers before you spend on ads.</p></div>
+      <div><h4>Site owners</h4><p>Catch ranking drops early and see the likely cause before traffic falls.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="pipeline">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">How does it work?</div>
+      <h2>Three loops: find the audience, watch Google, work with creators</h2>
+      <p class="sub">Each loop has four stages. Every source runs on its own, so one failing never costs you the rest.</p>
+    </div>
+
+    <div class="block">
+      <div class="lane"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg>Communities and creators</div>
+      <ol class="steps">
+        <li><b>Define</b><p>Paste a link. AI or the built-in engine suggests keywords. You edit and save.</p></li>
+        <li><b>Discover</b><p>Each keyword searches YouTube and, through Bright Data, TikTok, Instagram and X.</p></li>
+        <li><b>Rank</b><p>Off-topic results drop out. The rest get a score within their own platform.</p></li>
+        <li><b>Track and show</b><p>Every run is saved with its date. The dashboard shows the latest per platform, trends, and an AI-written target market.</p></li>
+      </ol>
+      <figure class="fig">
+        <p class="hint">Wide diagram: scroll sideways. The four stages are also written out above it.</p>
+      <div class="scroll">
+        <svg viewBox="0 0 1060 450" style="min-width:900px" role="img" aria-label="Data flow: a website link is read and turned into a niche by Groq or a built-in keyword engine. The niche feeds YouTube and a Bright Data search-and-scrape chain. Results pass a relevance gate, get scored, are saved as dated SQLite snapshots, and appear in the dashboard and a CSV export.">
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>
+
+          <!-- phase bands -->
+          <rect class="band" x="8" y="44" width="250" height="388" rx="12"/>
+          <rect class="band" x="290" y="44" width="340" height="388" rx="12"/>
+          <rect class="band" x="660" y="44" width="184" height="388" rx="12"/>
+          <rect class="band" x="870" y="44" width="182" height="388" rx="12"/>
+          <text class="ph" x="20" y="30">DEFINE THE NICHE</text>
+          <text class="ph" x="302" y="30">DISCOVER</text>
+          <text class="ph" x="672" y="30">RANK</text>
+          <text class="ph" x="882" y="30">TRACK AND SHOW</text>
+
+          <!-- phase 1 -->
+          <rect class="nd" x="22" y="64" width="226" height="52" rx="8"/>
+          <text class="t1" x="36" y="87">Website link</text><text class="t2" x="36" y="104">you paste it</text>
+          <rect class="nd" x="22" y="148" width="226" height="52" rx="8"/>
+          <text class="t1" x="36" y="171">Read the page</text><text class="t2" x="36" y="188">title · meta tags · headings · text</text>
+          <rect class="nd gq" x="22" y="234" width="108" height="62" rx="8"><title>Groq: free tier, sees the first 10,000 characters, about 2 imports a minute</title></rect>
+          <text class="t1" x="34" y="258">Groq AI</text><text class="t2" x="34" y="275">free tier</text><text class="t2" x="34" y="288">needs a key</text>
+          <rect class="nd" x="140" y="234" width="108" height="62" rx="8"><title>Built-in keyword engine: word frequency weighted by title, meta and headings. No account.</title></rect>
+          <text class="t1" x="152" y="258">Built-in</text><text class="t2" x="152" y="275">keyword engine</text><text class="t2" x="152" y="288">no account</text>
+          <text class="lab" x="135" y="269" text-anchor="middle">or</text>
+          <rect class="nd ink" x="22" y="334" width="226" height="74" rx="8"/>
+          <text class="t1 ink-t" x="36" y="360">Your niche</text>
+          <text class="t2 ink-t" x="36" y="378">name · keywords · excludes</text><text class="t2 ink-t" x="36" y="393">you review, then save</text>
+
+          <g class="ln">
+            <path d="M135 116V148" marker-end="url(#ah)"/>
+            <path d="M76 200V234" marker-end="url(#ah)"/><path d="M194 200V234" marker-end="url(#ah)"/>
+            <path d="M76 296V334" marker-end="url(#ah)"/><path d="M194 296V334" marker-end="url(#ah)"/>
+          </g>
+          <text class="lab" x="143" y="136">fetch</text>
+          <text class="lab" x="135" y="222" text-anchor="middle">page text</text>
+          <text class="lab" x="135" y="320" text-anchor="middle">suggestion</text>
+
+          <!-- phase 2 -->
+          <rect class="nd yt" x="306" y="64" width="308" height="70" rx="8"/>
+          <text class="t1" x="320" y="88">YouTube Data API</text>
+          <text class="t2" x="320" y="108">search channels → read stats → sample recent videos</text>
+          <g class="pl yt"><rect x="546" y="71" width="60" height="18" rx="9"/><text x="576" y="84">free</text></g>
+
+          <circle cx="313" cy="160" r="4" fill="var(--c-bd)"/>
+          <text class="ph" x="323" y="164" style="letter-spacing:.06em">BRIGHT DATA · TIKTOK, INSTAGRAM, X</text>
+          <rect class="nd bd" x="306" y="176" width="308" height="62" rx="8"/>
+          <text class="t1" x="320" y="200">Google search per keyword</text>
+          <text class="t2" x="320" y="220">site:tiktok.com · instagram.com · x.com</text>
+          <g class="pl bd"><rect x="508" y="183" width="98" height="18" rx="9"/><text x="557" y="196">$1.50 / 1K</text></g>
+          <rect class="nd bd" x="306" y="282" width="308" height="72" rx="8"/>
+          <text class="t1" x="320" y="306">Profile scrapers</text>
+          <text class="t2" x="320" y="326">followers · bio · recent posts</text><text class="t2" x="320" y="341">max 20 profiles per platform per run</text>
+          <g class="pl bd"><rect x="508" y="289" width="98" height="18" rx="9"/><text x="557" y="302">$1.50 / 1K</text></g>
+          <rect class="nd dash" x="306" y="374" width="308" height="44" rx="8"/>
+          <text class="t2" x="320" y="393">A missing key skips that source.</text><text class="t2" x="320" y="408">A failed source never loses the others.</text>
+
+          <g class="ln">
+            <path d="M248 371H274V99H306" marker-end="url(#ah)"/><path d="M274 207H306" marker-end="url(#ah)"/>
+            <path d="M460 238V282" marker-end="url(#ah)"/>
+          </g>
+          <text class="lab" transform="translate(277 240) rotate(90)" text-anchor="middle">keywords</text>
+          <text class="lab" x="468" y="264">profile handles</text>
+
+          <!-- phase 3 -->
+          <rect class="nd" x="672" y="92" width="160" height="84" rx="8"/>
+          <text class="t1" x="686" y="116">Relevance gate</text><text class="t2" x="686" y="136">keeps communities that</text><text class="t2" x="686" y="151">mention your keywords</text>
+          <rect class="nd" x="672" y="236" width="160" height="112" rx="8"/>
+          <text class="t1" x="686" y="260">Score 0–100</text>
+          <text class="t2" x="686" y="280">reach 40%</text><text class="t2" x="686" y="295">engagement 40%</text><text class="t2" x="686" y="310">activity 20%</text><text class="t2" x="686" y="332">ranked per platform</text>
+
+          <g class="ln">
+            <path d="M614 99H648V134H672" marker-end="url(#ah)"/><path d="M614 318H648V134"/>
+            <path d="M752 176V236" marker-end="url(#ah)"/>
+          </g>
+          <text class="lab" transform="translate(651 226) rotate(90)" text-anchor="middle">channels and profiles</text>
+          <text class="lab" x="760" y="210">relevant only</text>
+
+          <!-- phase 4 -->
+          <rect class="nd" x="884" y="92" width="154" height="84" rx="8"/>
+          <text class="t1" x="898" y="116">SQLite snapshots</text><text class="t2" x="898" y="136">one dated row set</text><text class="t2" x="898" y="151">per run</text>
+          <rect class="nd" x="884" y="236" width="154" height="112" rx="8"/>
+          <text class="t1" x="898" y="260">Dashboard</text>
+          <text class="t2" x="898" y="277">where it lives</text><text class="t2" x="898" y="291">communities</text><text class="t2" x="898" y="305">influencers</text><text class="t2" x="898" y="319">target market</text><text class="t2" x="898" y="333">trends</text>
+          <rect class="nd" x="884" y="372" width="154" height="46" rx="8"/>
+          <text class="t1" x="898" y="392">CSV export</text><text class="t2" x="898" y="408">profile links</text>
+
+          <g class="ln">
+            <path d="M832 292H857V134H884" marker-end="url(#ah)"/>
+            <path d="M961 176V236" marker-end="url(#ah)"/>
+            <path d="M961 348V372" marker-end="url(#ah)"/>
+          </g>
+          <text class="lab" transform="translate(861 214) rotate(90)" text-anchor="middle">ranked rows</text>
+          <text class="lab" x="969" y="210">read latest</text>
+        </svg>
+      </div>
+      <div class="legend" aria-label="Colour key">
+        <span><i class="dot yt"></i>YouTube · free quota</span>
+        <span><i class="dot bd"></i>Bright Data · pay per record</span>
+        <span><i class="dot gq"></i>Groq · free tier</span>
+        <span><i class="dot in"></i>Built in · no account</span>
+      </div>
+      </figure>
+    </div>
+
+    <div class="block">
+      <div class="lane"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18l5-5 4 3 7-9M15 7h5v5"/><path d="M4 21h16"/></svg>Google rankings</div>
+      <ol class="steps">
+        <li><b>Collect</b><p>Each term is searched on Google, your pages are audited, and Google's update feed is read.</p></li>
+        <li><b>Detect</b><p>Today is compared with the median of recent checks. Only changes that persist, or are severe, alert.</p></li>
+        <li><b>Advise</b><p>Every alert gets causes and fixes from Google's guidance. Groq adds advice from your own page and rivals.</p></li>
+        <li><b>Show</b><p>The SEO tab with a fix queue and keyword ideas, a scheduled run and a macOS alert. History is kept for trends.</p></li>
+      </ol>
+      <figure class="fig">
+        <p class="hint">Wide diagram: scroll sideways. The four stages are also written out above it.</p>
+      <div class="scroll">
+        <svg viewBox="0 0 1060 400" style="min-width:900px" role="img" aria-label="SEO data flow: a Google rank check, a page audit, PageSpeed Insights and Google's update feed are collected. Today's results are compared with the median of recent checks, the drop is judged by expected clicks lost and given context. Every alert gets a fix playbook and, with a Groq key, tailored advice. Results go to SQLite history, the SEO tab and a daily command-line run with a macOS alert.">
+          <defs><marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>
+          <rect class="band" x="8" y="44" width="330" height="330" rx="12"/>
+          <rect class="band" x="366" y="44" width="214" height="330" rx="12"/>
+          <rect class="band" x="608" y="44" width="214" height="330" rx="12"/>
+          <rect class="band" x="850" y="44" width="202" height="330" rx="12"/>
+          <text class="ph" x="20" y="30">COLLECT</text><text class="ph" x="378" y="30">DETECT</text>
+          <text class="ph" x="620" y="30">ADVISE</text><text class="ph" x="862" y="30">SHOW</text>
+
+          <rect class="nd bd" x="22" y="60" width="302" height="62" rx="8"/>
+          <text class="t1" x="36" y="82">Google rank check</text>
+          <text class="t2" x="36" y="100">each term: where you rank, top 10, search features</text><text class="t2" x="36" y="114">page two only if you are not on page one</text>
+          <g class="pl bd"><rect x="232" y="66" width="84" height="18" rx="9"/><text x="274" y="79">$1.50 / 1K</text></g>
+          <rect class="nd" x="22" y="134" width="302" height="64" rx="8"/>
+          <text class="t1" x="36" y="156">Page audit</text>
+          <text class="t2" x="36" y="174">homepage and each ranking page</text><text class="t2" x="36" y="188">status · noindex · robots.txt · canonical · schema</text>
+          <g class="pl n"><rect x="264" y="140" width="52" height="18" rx="9"/><text x="290" y="153">free</text></g>
+          <rect class="nd" x="22" y="210" width="302" height="52" rx="8"/>
+          <text class="t1" x="36" y="232">PageSpeed Insights</text><text class="t2" x="36" y="250">Core Web Vitals and Lighthouse, optional</text>
+          <g class="pl n"><rect x="244" y="216" width="72" height="18" rx="9"/><text x="280" y="229">free key</text></g>
+          <rect class="nd" x="22" y="274" width="302" height="52" rx="8"/>
+          <text class="t1" x="36" y="296">Google update feed</text><text class="t2" x="36" y="314">Search Status Dashboard: is an update rolling out?</text>
+          <g class="pl n"><rect x="264" y="280" width="52" height="18" rx="9"/><text x="290" y="293">free</text></g>
+          <rect class="nd dash" x="22" y="334" width="302" height="36" rx="8"/>
+          <text class="t2" x="36" y="349">A failed lookup records nothing:</text><text class="t2" x="36" y="362">an outage never looks like a lost ranking.</text>
+
+          <g class="ln">
+            <path d="M324 91H352M324 166H352M324 236H352M324 300H352M352 91V300"/>
+            <path d="M352 114H380" marker-end="url(#ah3)"/>
+          </g>
+          <text class="lab" transform="translate(355 215) rotate(90)" text-anchor="middle">saved daily</text>
+
+          <rect class="nd" x="380" y="72" width="186" height="84" rx="8"/>
+          <text class="t1" x="394" y="96">Baseline</text><text class="t2" x="394" y="114">median of the last 7 checks</text><text class="t2" x="394" y="130">damps 1–2 place wobble</text>
+          <rect class="nd" x="380" y="176" width="186" height="112" rx="8"/>
+          <text class="t1" x="394" y="200">Judge the drop</text>
+          <text class="t2" x="394" y="218">severity = clicks lost</text><text class="t2" x="394" y="233">leaving page one = critical</text>
+          <text class="t2" x="394" y="248">confirmed on the 2nd check</text><text class="t2" x="394" y="263">many at once = site-wide</text>
+          <rect class="nd" x="380" y="300" width="186" height="60" rx="8"/>
+          <text class="t1" x="394" y="322">Add context</text><text class="t2" x="394" y="340">Google update, new rivals,</text><text class="t2" x="394" y="354">your own title changes</text>
+          <g class="ln"><path d="M473 156V176" marker-end="url(#ah3)"/><path d="M473 288V300" marker-end="url(#ah3)"/></g>
+
+          <g class="ln">
+            <path d="M566 232H594"/><path d="M594 122V240"/>
+            <path d="M594 122H622" marker-end="url(#ah3)"/><path d="M594 240H622" marker-end="url(#ah3)"/>
+          </g>
+          <text class="lab" transform="translate(597 182) rotate(90)" text-anchor="middle">alerts</text>
+
+          <rect class="nd" x="622" y="72" width="186" height="100" rx="8"/>
+          <text class="t1" x="636" y="96">Fix playbook</text><text class="t2" x="636" y="114">causes and fixes from</text><text class="t2" x="636" y="129">Google's own guidance</text><text class="t2" x="636" y="147">16 kinds of alert</text>
+          <rect class="nd gq" x="622" y="190" width="186" height="100" rx="8"/>
+          <text class="t1" x="636" y="214">Tailored advice</text><text class="t2" x="636" y="232">from Groq, free tier</text><text class="t2" x="636" y="247">grounded in your page</text><text class="t2" x="636" y="262">and rivals' titles</text>
+          <rect class="nd dash" x="622" y="304" width="186" height="56" rx="8"/>
+          <text class="t2" x="636" y="326">If Google is mid-update:</text><text class="t2" x="636" y="342">wait, no quick fixes.</text>
+
+          <g class="ln">
+            <path d="M808 122H836"/><path d="M808 240H836"/><path d="M836 122V240"/>
+            <path d="M836 216H864" marker-end="url(#ah3)"/>
+          </g>
+          <text class="lab" transform="translate(839 181) rotate(90)" text-anchor="middle">advice</text>
+
+          <rect class="nd" x="864" y="72" width="174" height="64" rx="8"/>
+          <text class="t1" x="878" y="96">SQLite history</text><text class="t2" x="878" y="114">one row per term per day</text>
+          <rect class="nd" x="864" y="156" width="174" height="120" rx="8"/>
+          <text class="t1" x="878" y="180">SEO tab</text>
+          <text class="t2" x="878" y="198">visibility score</text><text class="t2" x="878" y="212">rankings and trend</text><text class="t2" x="878" y="226">alerts and a fix queue</text><text class="t2" x="878" y="240">keyword ideas</text><text class="t2" x="878" y="254">page health</text>
+          <rect class="nd dash" x="864" y="292" width="174" height="68" rx="8"/>
+          <text class="t1" x="878" y="314">Runs by itself</text><text class="t2" x="878" y="332">schedule_daily.py install</text><text class="t2" x="878" y="347">macOS alert if critical</text>
+          <g class="ln"><path d="M951 136V156" marker-end="url(#ah3)"/></g>
+        </svg>
+      </div>
+      <div class="legend" aria-label="Colour key">
+        <span><i class="dot bd"></i>Bright Data · pay per lookup</span>
+        <span><i class="dot gq"></i>Groq · free tier</span>
+        <span><i class="dot in"></i>Free or built in</span>
+      </div>
+      </figure>
+    </div>
+
+    <div class="block">
+      <div class="lane"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.8.3 4.5 2.5 4.5 5.8"/></svg>Working with creators</div>
+      <ol class="steps">
+        <li><b>Shortlist</b><p>Pick creators from the ranked list, or add someone by hand. Each sits in one stage, and the day it began is kept.</p></li>
+        <li><b>Reach out</b><p>Groq drafts a message from your offer and website, and emails found in public bios are offered. You send it yourself.</p></li>
+        <li><b>Take applications</b><p>Import a CSV or paste rows. Check each applicant’s real follower count, then accept or reject.</p></li>
+        <li><b>Fund and follow</b><p>Record each grant. Funded creators are read from their platforms daily, so their audience then and now sits beside the niche’s.</p></li>
+      </ol>
+      <figure class="fig">
+        <p class="hint">Wide diagram: scroll sideways. The four stages are also written out above it.</p>
+      <div class="scroll">
+        <svg viewBox="0 0 1060 410" style="min-width:900px" role="img" aria-label="Creator pipeline: creators are shortlisted from the ranked list or added by hand. Groq drafts a message that you edit and send yourself, and a flag shows who has not replied after 7 days. Applications are imported from a CSV or pasted rows, matched by column, then accepted or rejected, with an applicant dashboard. Accepted creators get grants, and performance compares their audience then and now with the niche's other creators.">
+          <defs><marker id="ah4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>
+          <rect class="band" x="8" y="44" width="250" height="300" rx="12"/>
+          <rect class="band" x="278" y="44" width="250" height="300" rx="12"/>
+          <rect class="band" x="548" y="44" width="250" height="300" rx="12"/>
+          <rect class="band" x="818" y="44" width="234" height="300" rx="12"/>
+          <text class="ph" x="20" y="30">SHORTLIST</text><text class="ph" x="290" y="30">REACH OUT</text>
+          <text class="ph" x="560" y="30">TAKE APPLICATIONS</text><text class="ph" x="830" y="30">FUND AND FOLLOW</text>
+
+          <rect class="nd" x="22" y="64" width="108" height="70" rx="8"/>
+          <text class="t1" x="34" y="88">Ranked list</text><text class="t2" x="34" y="106">from the</text><text class="t2" x="34" y="120">leaderboard</text>
+          <rect class="nd" x="140" y="64" width="108" height="70" rx="8"/>
+          <text class="t1" x="152" y="88">Add by hand</text><text class="t2" x="152" y="106">someone not on</text><text class="t2" x="152" y="120">the leaderboard</text>
+          <rect class="nd ink" x="22" y="172" width="226" height="102" rx="8"/>
+          <text class="t1 ink-t" x="36" y="198">Outreach list</text>
+          <text class="t2 ink-t" x="36" y="218">one row per creator</text><text class="t2 ink-t" x="36" y="233">shortlisted → contacted → replied</text><text class="t2 ink-t" x="36" y="248">the day each stage began is kept</text>
+
+          <rect class="nd gq" x="292" y="64" width="222" height="100" rx="8"><title>Groq: free tier. Reads your offer, your website and the facts held about the creator. The prompt forbids inventing anything about them.</title></rect>
+          <text class="t1" x="306" y="88">Groq draft</text>
+          <text class="t2" x="306" y="107">a first message or a follow-up</text><text class="t2" x="306" y="122">from your offer, your website</text><text class="t2" x="306" y="137">and what is known about them</text>
+          <rect class="nd dash" x="292" y="186" width="222" height="56" rx="8"/>
+          <text class="t1" x="306" y="210">You edit and send it</text><text class="t2" x="306" y="228">nothing is sent from the tool</text>
+          <rect class="nd" x="292" y="264" width="222" height="56" rx="8"/>
+          <text class="t1" x="306" y="288">Follow-up flag</text><text class="t2" x="306" y="306">no reply after 7 days</text>
+
+          <rect class="nd" x="562" y="64" width="222" height="52" rx="8"/>
+          <text class="t1" x="576" y="87">Applications</text><text class="t2" x="576" y="104">CSV file · pasted rows · form</text>
+          <rect class="nd" x="562" y="134" width="222" height="70" rx="8"/>
+          <text class="t1" x="576" y="158">Import</text><text class="t2" x="576" y="176">columns matched by their words</text><text class="t2" x="576" y="191">same person twice: refreshed</text>
+          <rect class="nd" x="562" y="222" width="222" height="52" rx="8"/>
+          <text class="t1" x="576" y="245">Accept or reject</text><text class="t2" x="576" y="262">the stage and its day are kept</text>
+          <rect class="nd" x="562" y="290" width="222" height="42" rx="8"/>
+          <text class="t1" x="576" y="308">Applicant dashboard</text><text class="t2" x="576" y="323">volume · acceptance · speed</text>
+
+          <rect class="nd" x="832" y="64" width="208" height="70" rx="8"/>
+          <text class="t1" x="846" y="88">Grants</text><text class="t2" x="846" y="106">amount · kind · date</text><text class="t2" x="846" y="120">deliverable due and done</text>
+          <rect class="nd" x="832" y="152" width="208" height="70" rx="8"/>
+          <text class="t1" x="846" y="176">Audience readings</text><text class="t2" x="846" y="194">read from the platforms daily,</text><text class="t2" x="846" y="208">plus any you log yourself</text>
+          <rect class="nd ink" x="832" y="240" width="208" height="94" rx="8"/>
+          <text class="t1 ink-t" x="846" y="264">Performance</text>
+          <text class="t2 ink-t" x="846" y="283">audience then and now</text><text class="t2 ink-t" x="846" y="298">beside the niche’s others</text><text class="t2 ink-t" x="846" y="313">cost per new follower</text>
+
+          <g class="ln">
+            <path d="M76 134V172" marker-end="url(#ah4)"/><path d="M194 134V172" marker-end="url(#ah4)"/>
+            <path d="M248 223H270V114H292" marker-end="url(#ah4)"/><path d="M403 164V186" marker-end="url(#ah4)"/><path d="M403 242V264" marker-end="url(#ah4)"/>
+            <path d="M514 292H538V90H562" marker-end="url(#ah4)" stroke-dasharray="4 3"/>
+            <path d="M673 116V134" marker-end="url(#ah4)"/><path d="M673 204V222" marker-end="url(#ah4)"/><path d="M673 274V290" marker-end="url(#ah4)"/>
+            <path d="M784 248H808V99H832" marker-end="url(#ah4)"/>
+            <path d="M936 134V152" marker-end="url(#ah4)"/><path d="M936 222V240" marker-end="url(#ah4)"/>
+          </g>
+          <text class="lab" transform="translate(541 191) rotate(90)" text-anchor="middle">they apply</text>
+          <text class="lab" transform="translate(811 176) rotate(90)" text-anchor="middle">accepted</text>
+
+          <rect class="nd dash" x="8" y="362" width="1044" height="38" rx="8"/>
+          <text class="t2" x="22" y="385">One list per niche. A creator can enter at any stage. Nothing here sends a message or moves money: it records what you do.</text>
+        </svg>
+      </div>
+      <div class="legend" aria-label="Colour key">
+        <span><i class="dot gq"></i>Groq · free tier</span>
+        <span><i class="dot in"></i>Built in · no account</span>
+        <span>You decide and send. The tool records.</span>
+      </div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="costs">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">What does it cost?</div>
+      <h2>Mostly free. One metered bill.</h2>
+      <p class="sub">Only Bright Data charges per use, at $1.50 per 1,000 items. A community run is about 12 cents and an SEO check about 2 cents, and one shared free allowance can cover both. The dashboard shows an estimate before each run, and a meter of what Bright Data actually billed this month.</p>
+    </div>
+
+    <div class="pricing">
+      <div class="card paid">
+        <div class="who"><span class="dot bd"></span>Bright Data · TikTok, Instagram, X and Google rank checks</div>
+        <div class="big">$1.50<span class="per"> / 1,000 items</span></div>
+        <p>Pay as you go per search or record. 5,000 credits a month are free, shared across all of it. The wallet is pre-paid, so there are no surprise bills.</p>
+        <div class="run">
+          <h3>One full run ≈ $0.12</h3>
+          <p class="ch-sub">7 keywords · 20 profiles per platform · every cap reached</p>
+          <div class="hbars">
+          <div class="hb" tabindex="0" data-tip="Profile records: 60 records (20 each for TikTok, Instagram, X) × $0.0015 = $0.090">
+            <div class="hb-top"><b><span class="dot bd"></span>Profile records · 60</b><span class="v num">$0.090</span></div>
+            <div class="hb-track"><div class="seg-bd" style="left:0;width:90%"></div></div></div>
+          <div class="hb" tabindex="0" data-tip="Google searches: 7 keywords × 3 platforms = 21 requests × $0.0015 = $0.0315">
+            <div class="hb-top"><b><span class="dot bd"></span>Google searches · 21</b><span class="v num">$0.032</span></div>
+            <div class="hb-track"><div class="seg-bd" style="left:0;width:31.5%"></div></div></div>
+          </div>
+        <div class="axis" style="grid-template-columns:minmax(0,1fr);margin-top:6px" aria-hidden="true"><div><span>$0</span><span>$0.05</span><span>$0.10</span></div></div>
+          <div class="gauge" role="img" aria-label="One full run uses about 81 of 5,000 free items"><i style="width:1.6%;background:var(--c-bd);min-width:3px"></i></div><div class="gauge-l num">≈81 of 5,000 free credits per community run</div>
+        <details class="tv"><summary>Table view</summary><div class="scroll"><table>
+          <tr><th>Item</th><th class="r">Count</th><th class="r">Rate</th><th class="r">Cost</th></tr>
+          <tr><td>Profile records</td><td class="r">60</td><td class="r">$1.50 / 1K</td><td class="r">$0.0900</td></tr>
+          <tr><td>Google searches</td><td class="r">21</td><td class="r">$1.50 / 1K</td><td class="r">$0.0315</td></tr>
+          <tr><td>YouTube Data API</td><td class="r">≈800 units</td><td class="r">free quota</td><td class="r">$0</td></tr>
+          <tr><td>Groq import</td><td class="r">1 per niche</td><td class="r">free tier</td><td class="r">$0</td></tr>
+          <tr><th>Total</th><th class="r">81 billable</th><th></th><th class="r">≈ $0.12</th></tr>
+        </table></div></details>
+          <p class="fine">Failed profile lookups still bill.</p>
+        </div>
+      </div>
+      <figure class="fig">
+        <h3>Per month, worst case</h3>
+        <p class="ch-sub">Community runs of 7 keywords, SEO checks of 7 terms · the free 5,000 credits are one shared pool</p>
+        <div class="hbars">
+          <div class="hb" tabindex="0" data-tip="One run: 81 items = $0.12 at list price, $0 after the free tier.">
+            <div class="hb-top"><b>One run</b><span class="v num">$0.12 <span class="hb-note">→ $0</span></span></div>
+            <div class="hb-track"><div class="seg-free" style="left:0;width:1.1%;min-width:4px"></div></div></div>
+          <div class="hb" tabindex="0" data-tip="Weekly: 4 runs = 324 items = $0.49 at list price, $0 after the free tier.">
+            <div class="hb-top"><b>Weekly · 4 runs</b><span class="v num">$0.49 <span class="hb-note">→ $0</span></span></div>
+            <div class="hb-track"><div class="seg-free" style="left:0;width:4.1%;min-width:6px"></div></div></div>
+          <div class="hb" tabindex="0" data-tip="Daily: 30 runs = 2,430 items = $3.65 at list price, $0 after the free tier.">
+            <div class="hb-top"><b>Daily · 30 runs</b><span class="v num">$3.65 <span class="hb-note">→ $0</span></span></div>
+            <div class="hb-track"><div class="seg-free" style="left:0;width:30.4%"></div></div></div>
+          <div class="hb" tabindex="0" data-tip="Daily, communities plus one SEO check: 81 + up to 14 lookups = 95 items a day, 2,850 a month = $4.28 at list price, $0 after the free tier.">
+            <div class="hb-top"><b>Daily · communities + SEO</b><span class="v num">$4.28 <span class="hb-note">→ $0</span></span></div>
+            <div class="hb-track"><div class="seg-free" style="left:0;width:35.6%"></div></div></div>
+          <div class="hb" tabindex="0" data-tip="Daily, 3 niches: 7,290 items = $10.94 at list price. The free 5,000 items cover $7.50, leaving 2,290 items = $3.44.">
+            <div class="hb-top"><b>Daily · 3 niches</b><span class="v num">$10.94 <span class="hb-note">→ $3.44</span></span></div>
+            <div class="hb-track"><div class="seg-free" style="left:0;width:62.5%"></div><div class="seg-bd" style="left:62.5%;width:28.7%;border-radius:0"></div></div></div>
+        </div>
+        <div class="axis" style="grid-template-columns:minmax(0,1fr);margin-top:6px" aria-hidden="true"><div><span>$0</span><span>$3</span><span>$6</span><span>$9</span><span>$12</span></div></div>
+        <div class="key"><span><i class="k-free"></i>covered by the free allowance</span><span><i class="k-bd"></i>billed</span><span>bar length = list price · → after free tier</span></div>
+        <details class="tv"><summary>Table view</summary><div class="scroll"><table>
+          <tr><th>Scenario</th><th class="r">Items</th><th class="r">List price</th><th class="r">After 5,000 free</th></tr>
+          <tr><td>One run</td><td class="r">81</td><td class="r">$0.12</td><td class="r">$0</td></tr>
+          <tr><td>Weekly · 4 runs</td><td class="r">324</td><td class="r">$0.49</td><td class="r">$0</td></tr>
+          <tr><td>Daily · 30 runs</td><td class="r">2,430</td><td class="r">$3.65</td><td class="r">$0</td></tr>
+          <tr><td>Daily · communities + SEO</td><td class="r">2,850</td><td class="r">$4.28</td><td class="r">$0</td></tr>
+          <tr><td>Daily · 3 niches</td><td class="r">7,290</td><td class="r">$10.94</td><td class="r">$3.44</td></tr>
+        </table></div></details>
+      </figure>
+    </div>
+
+    <h3 class="mini">Everything else is free</h3>
+    <div class="free-strip">
+      <div class="free-item">
+        <div class="free-top"><span class="who"><span class="dot yt"></span>YouTube Data API</span><span class="v">$0</span></div>
+        <p>Free quota. A run uses about 800 of the default 10,000 units a day, so roughly 12 runs a day.</p>
+        <div class="gauge" role="img" aria-label="About 800 of 10,000 daily units per run"><i style="width:8%;background:var(--c-yt)"></i></div><div class="gauge-l num">≈800 / 10,000 units per run</div>
+      </div>
+      <div class="free-item">
+        <div class="free-top"><span class="who"><span class="dot gq"></span>Groq · import, advice, ideas, target market, drafts</span><span class="v">$0</span></div>
+        <p>Free tier, with a limit of 8,000 tokens a minute. A call (an import, advice, keyword ideas, the target market or a message draft) is roughly 2,000 to 4,000 tokens, so expect 2 to 4 a minute. Paid rates would be under $0.001 per import.</p>
+        <div class="gauge" role="img" aria-label="About 4,000 of 8,000 tokens per minute per import"><i style="width:50%;background:var(--c-groq)"></i></div><div class="gauge-l num">≈4K / 8K tokens per minute per import</div>
+      </div>
+      <div class="free-item">
+        <div class="free-top"><span class="who"><span class="dot in"></span>Google update feed · PageSpeed</span><span class="v">$0</span></div>
+        <p>Both are free. PageSpeed needs a free API key with the API switched on in your Google Cloud project.</p>
+      </div>
+    </div>
+
+    <details class="tv how"><summary>How these numbers are calculated, and where they come from</summary>
+    <div class="formula-line"><b>SEO check</b><span class="mono">(terms × 1 or 2) × $0.0015</span><span>per check. Page two is fetched only for terms where you are not on page one. Tracked terms are capped at 15, and the page audit is free.</span></div>
+    <div class="formula-line"><b>Community run</b><span class="mono">(keywords × 3 + up to 60 profiles) × $0.0015</span><span>per run. Lower <code>BRIGHTDATA_MAX_PROFILES</code> to cap it.</span></div>
+    <div class="formula-line"><b>Reading creators</b><span class="mono">(funded creators + applicants checked, outside YouTube) × $0.0015</span><span>One record each, and only for creators the daily runs did not find. YouTube is free quota.</span></div>
+    <p class="fine">Prices were read from the vendors’ pages on 4 Oct 2026: <a href="https://brightdata.com/pricing/serp" target="_blank" rel="noopener">Bright Data SERP</a>, <a href="https://brightdata.com/pricing/web-scraper" target="_blank" rel="noopener">Bright Data scrapers</a>, <a href="https://console.groq.com/docs/rate-limits" target="_blank" rel="noopener">Groq limits</a>. Bright Data’s <a href="https://docs.brightdata.com/general/account/billing-and-pricing/free-tier.md" target="_blank" rel="noopener">free-tier docs</a> say the 5,000 free credits are one shared pool across searches and scrapers, one credit per request or record, with no surprise bills. Failed profile lookups still bill. YouTube’s 10,000-unit figure is the usual default, so check your own quota in Google Cloud. Token and unit figures are estimates; Bright Data’s dashboard shows real usage after the first run.</p>
+    </details>
+  </div>
+</section>
+
+<section class="sec" id="status">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Where does it stand?</div>
+      <h2>Every deliverable is built. The paid sources still need a live run.</h2>
+      <p class="sub">Checked against real services where a key exists. Everything else is tested on recorded responses.</p>
+    </div>
+    <h3 class="mini" id="next" style="margin-top:0">Do next, in order</h3>
+    <ol class="next">
+      <li>Add <code>BRIGHTDATA_API_KEY</code> and <code>BRIGHTDATA_SERP_ZONE</code> to <code>.env</code></li>
+      <li>Add the website to “AI Workforce Management”, then <b>Run discovery</b> and <b>Run SEO check now</b></li>
+      <li>Install the daily run with <code>python schedule_daily.py install</code></li>
+    </ol>
+    <h3 class="mini">The 12 deliverables</h3>
+    <div class="compare deliv" role="table" aria-label="The 12 deliverables and how far each is proven">
+      <div class="cmp-row cmp-head" role="row"><span role="columnheader">Deliverable</span><span role="columnheader">What exists</span><span role="columnheader">How far it is proven</span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">AI community tracker<small>Where it lives · Communities · Trends</small></span><span class="before" role="cell">Finds communities and creators for a niche on YouTube, TikTok, Instagram and X, and saves a dated snapshot of each run.</span><span class="after" role="cell"><span class="st rec"><i aria-hidden="true"></i><span>YouTube verified live. TikTok, Instagram and X are tested on recorded responses until a Bright Data key is added.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Calculating API costs<small>Costs section</small></span><span class="before" role="cell">Every service priced from its vendor’s page, with worst-case runs and monthly scenarios.</span><span class="after" role="cell"><span class="st rec"><i aria-hidden="true"></i><span>Figures are estimates until the meter has counted a live run.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">SEO tracker<small>SEO tab</small></span><span class="before" role="cell">Google rank per term, a visibility score, history, alerts, a page audit and Google’s update feed.</span><span class="after" role="cell"><span class="st rec"><i aria-hidden="true"></i><span>Page audit and update feed verified live. Rank checks wait for a Bright Data key.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">AI SEO Manager<small>SEO tab · fix queue · keyword ideas</small></span><span class="before" role="cell">Causes and fixes for each alert, tailored advice, a fix queue you mark done, keyword ideas and a daily-run installer.</span><span class="after" role="cell"><span class="st rec"><i aria-hidden="true"></i><span>Advice and ideas verified live on Groq. Google’s related searches wait for the key. It does not edit your site.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">AI Target Market Finder<small>Target market tab</small></span><span class="before" role="cell">Three to five audience segments written from your website and the communities found.</span><span class="after" role="cell"><span class="st"><i aria-hidden="true"></i><span>Verified live on Groq with real YouTube data. The segments are hypotheses, not measured demographics.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Software dashboard<small>Streamlit · 7 tabs</small></span><span class="before" role="cell">One dashboard for all of the above, with a niche picker, a Today panel and a setup checklist.</span><span class="after" role="cell"><span class="st"><i aria-hidden="true"></i><span>Checked in a browser, including the Creators tab and the CSV paste import.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Step-by-step process<small>README · Getting started panel</small></span><span class="before" role="cell">A written guide and an in-app checklist that ticks off steps from your real setup.</span><span class="after" role="cell"><span class="st"><i aria-hidden="true"></i><span>Both exist, and the checklist is covered by the checks.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Run-cost estimation<small>Sidebar · command line</small></span><span class="before" role="cell">An estimate before every run, including reading funded creators, and a monthly meter of what Bright Data actually billed.</span><span class="after" role="cell"><span class="st rec"><i aria-hidden="true"></i><span>The estimate matches the cost table here. The meter is tested; real bills arrive with the first live run.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Leaderboard of influencers &amp; communities<small>Influencers tab</small></span><span class="before" role="cell">Creators ranked within each platform by reach, engagement and activity, with filters and a CSV export.</span><span class="after" role="cell"><span class="st rec"><i aria-hidden="true"></i><span>YouTube verified live. The other platforms wait for the key.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Creator outreach assistance<small>Creators › Outreach</small></span><span class="before" role="cell">A shortlist, stages with dates, follow-up flags, contact details found in public bios, and AI message drafts. Nothing is sent.</span><span class="after" role="cell"><span class="st"><i aria-hidden="true"></i><span>Drafts verified live on real channel names. Bios gave an email for 2 of 23 real YouTube channels, so most contacts are still yours to find.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Creator fund &amp; performance management<small>Creators › Fund</small></span><span class="before" role="cell">A budget, grants, deliverables, and each creator’s audience then and now beside the niche’s. Funded creators are read from their platforms each day.</span><span class="after" role="cell"><span class="st rec"><i aria-hidden="true"></i><span>Tested, and checked in a browser with live YouTube readings. TikTok, Instagram and X readings wait for the Bright Data key.</span></span></span></div>
+      <div class="cmp-row" role="row"><span class="what" role="cell">Applicant analytics dashboard<small>Creators › Applicants</small></span><span class="before" role="cell">CSV or pasted applications, accept or reject, volume, acceptance, speed, size and fit, and a button that reads each applicant’s real audience.</span><span class="after" role="cell"><span class="st rec"><i aria-hidden="true"></i><span>Tested, and checked in a browser with live YouTube checks. TikTok, Instagram and X applicants wait for the Bright Data key, and stay self-reported until then.</span></span></span></div>
+    </div>
+    <div class="legend" aria-label="Colour key">
+      <span><i class="dot" style="background:var(--good)"></i>Checked end to end</span>
+      <span><i class="dot" style="background:var(--warn)"></i>Built, and part of it waits for a Bright Data key</span>
+    </div>
+    <h3 class="mini">What is behind that</h3>
+    <div class="status">
+      <div class="card">
+        <span class="pill good"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Verified live</span>
+        <ul>
+          <li>YouTube discovery and ranking on the real API (14 channels)</li>
+          <li>Website import with Groq on 4 sites, with a fallback when rate-limited, and the built-in keyword engine on 8 sites</li>
+          <li>The SEO page audit on real sites, Google’s update feed, and Groq advice on a simulated drop</li>
+          <li>The target market and keyword ideas, written by Groq from real YouTube data</li>
+          <li>Outreach drafts from Groq on real channel names, including a channel title that tries to give the AI orders</li>
+          <li>Reading a creator’s numbers on the live YouTube API, by channel id and by @handle. The id lookup matched discovery exactly.</li>
+          <li>Contact details in real YouTube descriptions: an email on 2 of 23 channels and a link on 3</li>
+          <li>Page change lists written live on Groq for a real page, and the new SEO tab panels in a browser</li>
+          <li>The dashboard in a browser, including the Creators tab, the CSV paste import, checking applicants and reading a funded creator on live YouTube data</li>
+          <li>107 of 107 automated checks pass</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="pill warn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3v4l4 5-4 5v4M16 3v4l-4 5 4 5v4"/></svg>Built, needs you</span>
+        <ul>
+          <li>TikTok, Instagram and X through Bright Data, tested on recorded responses</li>
+          <li>Google rank checks and related searches, also on recorded responses. They need the Bright Data key and a SERP zone.</li>
+          <li>Reading funded creators and checking applicants works for YouTube now. TikTok, Instagram and X cost one Bright Data record each and wait for the key; until then those applicants stay self-reported.</li>
+          <li>Search Console, the Google sign-in and the DataForSEO look need your credentials. They are tested on recorded responses, every Search Console request is checked against Google’s published API description, and the sign-in runs end to end against a stand-in for Google.</li>
+          <li>PageSpeed Insights: switch on the free API in Google Cloud</li>
+          <li>The daily schedule is ready. You install it, because it adds a background job.</li>
+          <li>The first live run will show whether some Instagram or X post fields come back blank. The score ignores a missing metric.</li>
+        </ul>
+      </div>
+      <div class="card quiet">
+        <span class="pill none"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/></svg>Not built, see the plans</span>
+        <ul>
+          <li>LinkedIn, Facebook Groups, Discord, Telegram. The dashboard lists them as not measured.</li>
+          <li>Merging one person’s accounts across platforms</li>
+          <li>Search Console’s Links report (Google offers no API) and backlink providers other than DataForSEO</li>
+          <li>Sending messages and paying creators. The tool drafts and records; you send and pay.</li>
+          <li>Contact details beyond what creators publish in their own bios</li>
+          <li>Editing your site automatically</li>
+          <li>Reddit, removed on request</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="plans">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">What comes next?</div>
+      <h2>Plans for what to add next</h2>
+      <p class="sub">A proposed order, not a commitment. Phases 2 and 3 are built and the rest is still a proposal. Each item says what it needs from you. The bars show size: one is a focused session, two a few sessions, three needs a design decision first.</p>
+    </div>
+    <div class="phase">
+      <div class="phase-head"><div class="ph-n">Phase 1</div><h3>Prove it live</h3><p>Needs only your keys and one command.</p></div>
+        <ul class="road">
+          <li><div class="r-t"><b>First live run of the paid sources</b><span class="size" role="img" aria-label="Size: small"><i class="on"></i><i></i><i></i></span></div><p>Connect Bright Data and run discovery and an SEO check. See what TikTok, Instagram, X and Google really return, fix any field that comes back blank, and replace the cost estimates with the meter’s real counts.</p><div class="r-n"><span>Needs</span>Your Bright Data key and a SERP zone.<span>Cost</span>About $0.12 a community run and $0.02 an SEO check, inside the free 5,000 credits.</div></li>
+          <li><div class="r-t"><b>Turn on the daily run</b><span class="size" role="img" aria-label="Size: small"><i class="on"></i><i></i><i></i></span></div><p>Install the schedule so trends, ranking alerts and the fund’s before-and-after numbers start to build. Each needs two or more days of data before it shows.</p><div class="r-n"><span>Needs</span>One command from you: <code>python schedule_daily.py install</code>. It adds a background job, so it is yours to run.<span>Cost</span>Same as above.</div></li>
+        </ul>
+    </div>
+    <div class="phase">
+      <div class="phase-head"><div class="ph-n">Phase 2</div><h3>Make the creator tools hands-off</h3><span class="pill good"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Built</span><p>Removes the typing and the guessing.</p></div>
+        <ul class="road">
+          <li><div class="r-t"><b>Follow funded creators automatically</b><span class="size" role="img" aria-label="Size: medium"><i class="on"></i><i class="on"></i><i></i></span></div><p>Built. The daily run reads every funded creator that discovery did not find, and the Fund tab has a Read funded creators now button, so their audience then and now needs no typing.</p><div class="r-n"><span>Needs</span>Bright Data, for creators outside YouTube.<span>Cost</span>YouTube is free. About $0.0015 per creator per day elsewhere.</div></li>
+          <li><div class="r-t"><b>Check applicants’ follower counts</b><span class="size" role="img" aria-label="Size: medium"><i class="on"></i><i class="on"></i><i></i></span></div><p>Built. A Check follower counts button reads each applicant’s real audience, engagement and posting rate. It shows as “verified” beside what they said, and a verified applicant is scored the way the leaderboard scores creators.</p><div class="r-n"><span>Needs</span>Nothing for YouTube. Bright Data for the others.<span>Cost</span>One lookup per applicant. About $0.0015 each outside YouTube.</div></li>
+          <li><div class="r-t"><b>Find contact details in public bios</b><span class="size" role="img" aria-label="Size: small"><i class="on"></i><i></i><i></i></span></div><p>Built. Emails and links in public bios are kept when discovery reads them, and offered with their source in each creator’s panel. On a real YouTube run an email showed on 2 of 23 channels, so most contacts are still yours to find.</p><div class="r-n"><span>Needs</span>Nothing.<span>Cost</span>None.</div></li>
+          <li><div class="r-t"><b>A daily digest</b><span class="size" role="img" aria-label="Size: small"><i class="on"></i><i></i><i></i></span></div><p>Built. The scheduled run prints a digest, the dashboard shows it at the top, and a macOS notification says so when something needs you. Email and Slack are not built.</p><div class="r-n"><span>Needs</span>Nothing for the notification. Your choice of channel for email or Slack.<span>Cost</span>None.</div></li>
+          <li><div class="r-t"><b>A report that updates itself</b><span class="size" role="img" aria-label="Size: medium"><i class="on"></i><i class="on"></i><i></i></span></div><p>Built in a narrower form. <code>python report.py</code> rebuilds this report with fresh counts of checks, lines, files and tables, and stops if a file is missing from the module map. The wording, status and plans are still written by hand in <code>report_template.html</code>.</p><div class="r-n"><span>Needs</span>Nothing.<span>Cost</span>None.</div></li>
+        </ul>
+    </div>
+    <div class="phase">
+      <div class="phase-head"><div class="ph-n">Phase 3</div><h3>Go deeper on Google</h3><span class="pill good"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Built</span><p>Replaces estimates with measurements.</p></div>
+        <ul class="road">
+          <li><div class="r-t"><b>Search Console</b><span class="size" role="img" aria-label="Size: medium"><i class="on"></i><i class="on"></i><i></i></span></div><p>Built. The SEO tab shows the clicks, impressions, queries and pages Google measured for the last 28 days against the 28 before, and what Google’s index says about your key pages. Rank alerts quote real clicks, a fall in clicks or a page dropping out of the index raises an alert, and queries you already show for are offered as keywords. Not yet run against the live service.</p><div class="r-n"><span>Needs</span>You sign in to Google once and allow read-only access, using credentials from your own Google Cloud project (set its consent screen to In production, or Google ends the sign-in after 7 days).<span>Cost</span>Free.</div></li>
+          <li><div class="r-t"><b>Ready-to-use page fixes</b><span class="size" role="img" aria-label="Size: medium"><i class="on"></i><i class="on"></i><i></i></span></div><p>Built. Under an alert about a page’s words, and under each page in Page health, a change list gives the new title, description, H1 and any H2, each beside what the page says now, ready to copy or download. Restoring a lost title or heading is done by rule; new wording is checked in code for length, invented figures, copied competitor wording and headings the page does not have. Run live on Groq against a real page. The tool never edits your site.</p><div class="r-n"><span>Needs</span>Nothing.<span>Cost</span>Groq free tier.</div></li>
+          <li><div class="r-t"><b>Backlink monitoring</b><span class="size" role="img" aria-label="Size: medium"><i class="on"></i><i class="on"></i><i></i></span></div><p>Built. A Backlinks section lists new and lost links in the last 30 days. It reads a free export (Search Console’s Latest links, Ahrefs, Semrush, Moz, Majestic) or looks through DataForSEO about weekly, and stops before a look that would pass the monthly budget you set. A partial look never marks a link lost. DataForSEO has not been run live.</p><div class="r-n"><span>Needs</span>For the automatic look, a DataForSEO login and a monthly budget. An export needs nothing.<span>Cost</span>About $0.06 for 1,000 links; about 25 cents a month at one look a week.</div></li>
+        </ul>
+    </div>
+    <div class="phase">
+      <div class="phase-head"><div class="ph-n">Phase 4</div><h3>Needs a decision first</h3><p>Each of these changes what the tool is allowed to do.</p></div>
+        <ul class="road">
+          <li><div class="r-t"><b>Send outreach from the tool</b><span class="size" role="img" aria-label="Size: large"><i class="on"></i><i class="on"></i><i class="on"></i></span></div><p>Approve each draft, then send it through your own email account, with rate limits, reply tracking and an opt-out list. Email rules differ by country, so a sending policy comes first.</p><div class="r-n"><span>Needs</span>Your policy, and access to your email account.<span>Cost</span>None from this tool.</div></li>
+          <li><div class="r-t"><b>A payment list</b><span class="size" role="img" aria-label="Size: small"><i class="on"></i><i></i><i></i></span></div><p>A payment list per grant (payee, amount, reference) and a place to mark it paid with a receipt link. The tool would still never move money.</p><div class="r-n"><span>Needs</span>How you pay creators.<span>Cost</span>None.</div></li>
+          <li><div class="r-t"><b>More platforms</b><span class="size" role="img" aria-label="Size: large"><i class="on"></i><i class="on"></i><i class="on"></i></span></div><p>LinkedIn, Facebook Groups, Discord and Telegram. Each is reached differently: private groups cannot be seen, and LinkedIn needs a paid dataset. A short research pass comes first, to say what is possible.</p><div class="r-n"><span>Needs</span>Which of them matter to you.<span>Cost</span>To be found out.</div></li>
+          <li><div class="r-t"><b>One creator, many accounts</b><span class="size" role="img" aria-label="Size: medium"><i class="on"></i><i class="on"></i><i></i></span></div><p>Merge a creator’s YouTube, TikTok, Instagram and X accounts into one profile, using links in their bios and your confirmation, so the leaderboard ranks people, not accounts.</p><div class="r-n"><span>Needs</span>Nothing.<span>Cost</span>None.</div></li>
+        </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec recessed" id="code">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">How is it built? · reference</div>
+      <h2>Twenty small files, one job each</h2>
+      <p class="sub">About 5,420 lines of app code and 3,100 lines of checks. The dashboard calls everything else, and the scoring and SEO rules are pure functions that never touch the network.</p>
+    </div>
+    <figure class="fig">
+      <p class="hint">Wide diagram: scroll sideways.</p>
+      <div class="scroll">
+        <svg viewBox="0 0 1180 700" style="min-width:880px" role="img" aria-label="Module map: app.py calls guide.py, digest.py, schedule_daily.py, importer.py, run.py, market.py, seo.py, seo_panels.py and creators_tab.py. run.py uses connectors.py, seo.py uses seo_rules.py, gsc.py and backlinks.py, seo_panels.py uses fixes.py, gsc.py and backlinks.py, and creators_tab.py uses creators.py and outreach.py. Everything that keeps data goes through store.py into one SQLite file, communities.db. importer.py, market.py, seo.py, fixes.py and outreach.py call Groq. connectors.py calls YouTube and Bright Data, seo.py also calls Bright Data and Google's free feeds, gsc.py calls Google Search Console, and backlinks.py calls DataForSEO. The test files are separate, and report.py is a separate script that rebuilds this report.">
+          <defs><marker id="ah5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>
+          <rect class="nd ink" x="470" y="10" width="240" height="56" rx="8"/>
+          <text class="tm ink-t" x="482" y="34">app.py</text><text class="t2 ink-t" x="482" y="53">dashboard · 484 lines</text>
+          <rect class="nd" x="150" y="94" width="180" height="56" rx="8"/>
+          <text class="tm" x="162" y="118">guide.py</text><text class="t2" x="162" y="137">setup checklist · 31 lines</text>
+          <rect class="nd" x="370" y="94" width="180" height="56" rx="8"/>
+          <text class="tm" x="382" y="118">digest.py</text><text class="t2" x="382" y="137">daily summary · 114 lines</text>
+          <rect class="nd" x="630" y="94" width="200" height="56" rx="8"/>
+          <text class="tm" x="642" y="118">schedule_daily.py</text><text class="t2" x="642" y="137">daily run installer · 80 lines</text>
+          <rect class="band" x="10" y="186" width="410" height="342" rx="12"/>
+          <rect class="band" x="430" y="186" width="380" height="342" rx="12"/>
+          <rect class="band" x="820" y="186" width="350" height="342" rx="12"/>
+          <text class="ph" x="22" y="521">FIND THE AUDIENCE</text><text class="ph" x="442" y="521">WATCH GOOGLE</text><text class="ph" x="832" y="521">WORK WITH CREATORS</text>
+          <rect class="nd" x="22" y="214" width="118" height="92" rx="8"/>
+          <text class="tm" x="34" y="238">importer.py</text><text class="t2" x="34" y="257">link → niche</text><text class="t2" x="34" y="272">290 lines</text>
+          <rect class="nd" x="152" y="214" width="118" height="92" rx="8"/>
+          <text class="tm" x="164" y="238">run.py</text><text class="t2" x="164" y="257">runs every source</text><text class="t2" x="164" y="272">66 lines</text>
+          <rect class="nd" x="282" y="214" width="118" height="92" rx="8"/>
+          <text class="tm" x="294" y="238">market.py</text><text class="t2" x="294" y="257">target market</text><text class="t2" x="294" y="272">87 lines</text>
+          <rect class="nd" x="152" y="336" width="130" height="90" rx="8"/>
+          <text class="tm" x="164" y="360">connectors.py</text><text class="t2" x="164" y="379">YouTube · TikTok,</text><text class="t2" x="164" y="394">Instagram · X</text><text class="t2" x="164" y="409">401 lines</text>
+          <rect class="nd" x="300" y="336" width="108" height="90" rx="8"/>
+          <text class="tm" x="312" y="360">scoring.py</text><text class="t2" x="312" y="379">relevance, scores</text><text class="t2" x="312" y="394">54 lines · pure</text>
+          <rect class="nd" x="442" y="214" width="176" height="92" rx="8"/>
+          <text class="tm" x="454" y="238">seo.py</text><text class="t2" x="454" y="257">ranks, audits, advice</text><text class="t2" x="454" y="272">574 lines · also a CLI</text>
+          <rect class="nd" x="630" y="214" width="176" height="92" rx="8"/>
+          <text class="tm" x="642" y="238">seo_panels.py</text><text class="t2" x="642" y="257">Search Console, fixes,</text><text class="t2" x="642" y="272">backlinks · 189 lines</text>
+          <rect class="nd" x="442" y="336" width="176" height="90" rx="8"/>
+          <text class="tm" x="454" y="360">seo_rules.py</text><text class="t2" x="454" y="379">alerts, playbooks, checks</text><text class="t2" x="454" y="394">558 lines · pure</text>
+          <rect class="nd" x="630" y="336" width="176" height="90" rx="8"/>
+          <text class="tm" x="642" y="360">fixes.py</text><text class="t2" x="642" y="379">new title, description,</text><text class="t2" x="642" y="394">headings · 183 lines</text>
+          <rect class="nd" x="442" y="456" width="176" height="44" rx="8"/>
+          <text class="tm" x="454" y="476">gsc.py</text><text class="t2" x="454" y="492">Search Console · 343 lines</text>
+          <rect class="nd" x="630" y="456" width="176" height="44" rx="8"/>
+          <text class="tm" x="642" y="476">backlinks.py</text><text class="t2" x="642" y="492">new and lost · 253 lines</text>
+          <rect class="nd" x="832" y="214" width="326" height="92" rx="8"/>
+          <text class="tm" x="844" y="238">creators_tab.py</text><text class="t2" x="844" y="257">Outreach, Applicants and Fund tabs</text><text class="t2" x="844" y="272">449 lines</text>
+          <rect class="nd" x="832" y="336" width="158" height="90" rx="8"/>
+          <text class="tm" x="844" y="360">creators.py</text><text class="t2" x="844" y="379">stages, import, fund</text><text class="t2" x="844" y="394">472 lines</text><text class="t2" x="844" y="409">pure where it can be</text>
+          <rect class="nd" x="1000" y="336" width="158" height="90" rx="8"/>
+          <text class="tm" x="1012" y="360">outreach.py</text><text class="t2" x="1012" y="379">message drafts</text><text class="t2" x="1012" y="394">95 lines</text>
+          <circle class="fg" cx="124" cy="293" r="5"><title>importer.py calls Groq</title></circle>
+          <circle class="fg" cx="384" cy="293" r="5"><title>market.py calls Groq</title></circle>
+          <circle class="fb" cx="586" cy="293" r="5"><title>seo.py calls Bright Data for Google searches</title></circle>
+          <circle class="fg" cx="602" cy="293" r="5"><title>seo.py calls Groq for advice and ideas. It also reads Google's free update feed and PageSpeed Insights.</title></circle>
+          <circle class="fg" cx="790" cy="413" r="5"><title>fixes.py calls Groq</title></circle>
+          <circle class="fy" cx="602" cy="488" r="5"><title>gsc.py calls Google Search Console and its URL Inspection API: read-only, free</title></circle>
+          <circle class="fb" cx="790" cy="488" r="5"><title>backlinks.py calls DataForSEO, paid per request and per row, within your monthly budget</title></circle>
+          <circle class="fy" cx="266" cy="413" r="5"><title>connectors.py calls the YouTube Data API</title></circle>
+          <circle class="fb" cx="250" cy="413" r="5"><title>connectors.py calls Bright Data for TikTok, Instagram and X</title></circle>
+          <circle class="fg" cx="1142" cy="413" r="5"><title>outreach.py calls Groq</title></circle>
+          <g class="ln">
+            <path d="M590 66V170"/><path d="M240 80H730"/>
+            <path d="M240 80V94" marker-end="url(#ah5)"/><path d="M460 80V94" marker-end="url(#ah5)"/><path d="M730 80V94" marker-end="url(#ah5)"/>
+            <path d="M81 170H995"/>
+            <path d="M81 170V214" marker-end="url(#ah5)"/><path d="M211 170V214" marker-end="url(#ah5)"/><path d="M341 170V214" marker-end="url(#ah5)"/>
+            <path d="M530 170V214" marker-end="url(#ah5)"/><path d="M718 170V214" marker-end="url(#ah5)"/><path d="M995 170V214" marker-end="url(#ah5)"/>
+            <path d="M211 306V336" marker-end="url(#ah5)"/><path d="M282 381H300" marker-end="url(#ah5)"/>
+            <path d="M530 306V336" marker-end="url(#ah5)"/><path d="M718 306V336" marker-end="url(#ah5)"/>
+            <path d="M442 252H436V478H442" marker-end="url(#ah5)"/><path d="M806 252H809V478H806" marker-end="url(#ah5)"/>
+            <path d="M911 306V336" marker-end="url(#ah5)"/><path d="M1079 306V336" marker-end="url(#ah5)"/>
+            <path d="M215 528V558" marker-end="url(#ah5)"/><path d="M620 528V558" marker-end="url(#ah5)"/><path d="M995 528V558" marker-end="url(#ah5)"/>
+          </g>
+          <text class="lab" x="224" y="548">reads, writes</text>
+          <rect class="nd" x="10" y="558" width="1160" height="56" rx="8"/>
+          <text class="tm" x="26" y="582">store.py</text>
+          <text class="t2" x="26" y="601">575 lines · the only code that touches communities.db, one file on disk with 20 tables</text>
+          <rect class="nd dash" x="10" y="634" width="400" height="44" rx="8"/>
+          <text class="tm" x="26" y="654">test_all.py · test_seo.py · test_creators.py</text>
+          <text class="t2" x="26" y="670">107 checks · 3,096 lines · no network or keys</text>
+          <rect class="nd dash" x="430" y="634" width="300" height="44" rx="8"/>
+          <text class="tm" x="446" y="654">report.py</text>
+          <text class="t2" x="446" y="670">rebuilds this report · 118 lines</text>
+        </svg>
+      </div>
+      <div class="legend" aria-label="Colour key">
+        <span><i class="dot yt"></i>calls Google (YouTube, Search Console) · free quota</span>
+        <span><i class="dot bd"></i>calls Bright Data or DataForSEO · pay per use</span>
+        <span><i class="dot gq"></i>calls Groq · free tier</span>
+      </div>
+      <figcaption>Arrows show who calls whom. The coloured dots mark the modules that reach an outside service, over the internet. Everything else works offline and is covered by the 107 checks.</figcaption>
+    </figure>
+
+    <div class="explain">
+      <div class="card">
+        <h3>How a score is made</h3>
+        <p class="ch-sub">Each metric becomes a percentile rank inside its own platform, then the three are blended.</p>
+        <div class="seg" role="img" aria-label="Score weights: reach 40 percent, engagement 40 percent, activity 20 percent"><div class="k1">40%</div><div class="k2">40%</div><div class="k3">20%</div></div>
+        <div class="parts">
+          <div><i class="k1"></i><span><b>Reach.</b> Subscribers or followers.</span></div>
+          <div><i class="k2"></i><span><b>Engagement.</b> YouTube: median views ÷ subscribers. TikTok: its own rate. Instagram and X: likes and comments per post ÷ followers.</span></div>
+          <div><i class="k3"></i><span><b>Activity.</b> Posts in 30 days.</span></div>
+        </div>
+        <p class="fine">If a platform does not supply a metric, the score ignores it and rescales the other weights instead of scoring it zero.</p>
+      </div>
+      <div class="card">
+        <h3>How an SEO alert is judged</h3>
+        <p class="ch-sub">Severity follows the clicks a drop would cost, using the expected click-through rate for each position.</p>
+      <div class="cols ctr" role="img" aria-label="Expected click-through by position: 28 percent at one, 15 at two, 10 at three, falling to 1.6 at ten"><div tabindex="0" data-tip="Position 1: about 28% of searchers click"><em class="num">28%</em><i style="height:78%"></i></div><div tabindex="0" data-tip="Position 2: about 15% of searchers click"><em class="num">15%</em><i style="height:41.8%"></i></div><div tabindex="0" data-tip="Position 3: about 10% of searchers click"><em class="num">10.1%</em><i style="height:28.1%"></i></div><div tabindex="0" data-tip="Position 4: about 7% of searchers click"><em class="num">7.2%</em><i style="height:20.1%"></i></div><div tabindex="0" data-tip="Position 5: about 5% of searchers click"><em class="num">5.1%</em><i style="height:14.2%"></i></div><div tabindex="0" data-tip="Position 6: about 4% of searchers click"><em class="num">4.4%</em><i style="height:12.3%"></i></div><div tabindex="0" data-tip="Position 7: about 3% of searchers click"><em class="num">3%</em><i style="height:8.4%"></i></div><div tabindex="0" data-tip="Position 8: about 2% of searchers click"><em class="num">2.1%</em><i style="height:5.8%"></i></div><div tabindex="0" data-tip="Position 9: about 2% of searchers click"><em class="num">1.9%</em><i style="height:5.3%"></i></div><div tabindex="0" data-tip="Position 10: about 1.6% of searchers click"><em class="num">1.6%</em><i style="height:4.5%"></i></div></div>
+      <div class="col-labels"><span>#1</span><span>#2</span><span>#3</span><span>#4</span><span>#5</span><span>#6</span><span>#7</span><span>#8</span><span>#9</span><span>#10</span></div>
+        <div class="judge">
+          <div><b>#1 → #3</b><br>loses 18 points of clicks: critical</div>
+          <div><b>#3 → #5</b><br>loses 5 points: warning once confirmed</div>
+          <div><b>#2 → #3</b><br>loses 5 points but one place: ignored</div>
+          <div><b>#10 → #11</b><br>leaves page one: always critical</div>
+        </div>
+      <details class="tv"><summary>Table view</summary><div class="scroll"><table>
+        <tr><th>Position</th><th class="r">Expected click-through</th></tr>
+        <tr><td>1</td><td class="r">28%</td></tr><tr><td>2</td><td class="r">15%</td></tr><tr><td>3</td><td class="r">10.1%</td></tr>
+        <tr><td>4</td><td class="r">7.2%</td></tr><tr><td>5</td><td class="r">5.1%</td></tr><tr><td>6</td><td class="r">4.4%</td></tr>
+        <tr><td>7</td><td class="r">3%</td></tr><tr><td>8</td><td class="r">2.1%</td></tr><tr><td>9</td><td class="r">1.9%</td></tr><tr><td>10</td><td class="r">1.6%</td></tr>
+      </table></div></details>
+      <p class="fine">The 2026 bands are compiled from First Page Sage, Backlinko and SISTRIX. AI Overviews lower absolute click-through, so the curve is used only as relative weights. Page two has no defensible benchmark, so its weights are an assumption. The thresholds are heuristics, each a named constant in <code>seo_rules.py</code>.</p>
+      </div>
+    </div>
+
+    <h3 class="mini">Twelve design decisions</h3>
+    <dl class="defs">
+      <div><dt>Rank within each platform</dt><dd>Followers mean different things on different platforms. A percentile inside one platform stops a single huge number from taking over.</dd></div>
+      <div><dt>Median, not average</dt><dd>One viral video pushed a 1,240-subscriber channel to #2. Using the median views per video moved it to #5.</dd></div>
+      <div><dt>Relevance gate</dt><dd>A community stays only if it mentions at least 15% of your keywords as whole words, and none of your excludes.</dd></div>
+      <div><dt>Dated snapshots</dt><dd>Every run is stored with its date, so trends and “what changed” need no extra code.</dd></div>
+      <div><dt>Baseline, not wobble</dt><dd>Today is compared with the median of the last 7 checks. A warning needs a second check below baseline; a first sighting shows as “watch”.</dd></div>
+      <div><dt>A failed lookup is not a lost ranking</dt><dd>If a Google search errors or returns nothing, no row is saved. An outage can never look like a drop.</dd></div>
+      <div><dt>Sources fail alone</dt><dd>A missing key shows as skipped and an error as failed. The other sources still save.</dd></div>
+      <div><dt>Capped and local</dt><dd>At most 20 profiles per platform per run. The dashboard serves only your own machine. Keys stay in <code>.env</code>.</dd></div>
+      <div><dt>AI kept to the evidence</dt><dd>Groq sees only your page, the rivals' titles and the communities found. Code enforces the rest: rewrites stay within length limits and never copy a rival, target-market segments name only communities that were found, and a message draft leaves a gap where a personal touch belongs.</dd></div>
+      <div><dt>The tool records, you act</dt><dd>A message draft is never sent and a grant never moves money. Every step you take is stored with its date, so reply rates and decision times are worked out, not typed in.</dd></div>
+      <div><dt>Say where a number came from</dt><dd>An applicant’s audience is marked self-reported unless the daily runs track that creator, and a comparison with the niche needs at least three other creators.</dd></div>
+      <div><dt>Cost shown before it is spent</dt><dd>Each run shows an estimate first, and a monthly meter counts only what Bright Data actually billed.</dd></div>
+    </dl>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">Built with Python, Streamlit and SQLite. Figures come from the project’s own code on 8 Oct 2026, a real YouTube run, live Groq calls, vendor price pages and Google’s documentation read on 4 Oct 2026. The setup guide is README.md, and the SEO research brief is docs/seo-research.md.</div></footer>
+
+<div id="tip" role="tooltip" hidden></div>
+<script>
+(function () {
+  var tip = document.getElementById('tip');
+  function place(x, y) {
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    var nx = Math.max(8, Math.min(x + 14, window.innerWidth - w - 8));
+    var ny = y - h - 12; if (ny < 8) ny = y + 20;
+    tip.style.transform = 'translate(' + nx + 'px,' + ny + 'px)';
+  }
+  function show(el, x, y) { tip.textContent = el.getAttribute('data-tip'); tip.hidden = false; place(x, y); }
+  document.querySelectorAll('[data-tip]').forEach(function (el) {
+    el.addEventListener('pointerenter', function (e) { show(el, e.clientX, e.clientY); });
+    el.addEventListener('pointermove', function (e) { place(e.clientX, e.clientY); });
+    el.addEventListener('pointerleave', function () { tip.hidden = true; });
+    el.addEventListener('focus', function () { var r = el.getBoundingClientRect(); show(el, r.left + r.width / 2, r.top); });
+    el.addEventListener('blur', function () { tip.hidden = true; });
+  });
+  try {
+    var links = Array.prototype.slice.call(document.querySelectorAll('#links a'));
+    var secs = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+    var queued = false;
+    var mark = function () {
+      queued = false;
+      var line = window.innerHeight * 0.4, cur = -1;
+      secs.forEach(function (s, i) { if (s && s.getBoundingClientRect().top <= line) cur = i; });
+      links.forEach(function (a, i) { if (i === cur) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+    };
+    window.addEventListener('scroll', function () { if (!queued) { queued = true; window.requestAnimationFrame(mark); } }, { passive: true });
+    mark();
+  } catch (e) {}
+})();
+</script>
+
+</body>
+</html>
